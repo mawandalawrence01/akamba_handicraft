@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from 'next-auth/react'
 import { 
   Heart, 
   Share2, 
@@ -63,7 +63,8 @@ interface WishlistItem {
 }
 
 export default function WishlistPage() {
-  const { user, isSignedIn } = useUser()
+  const { data: session } = useSession()
+  const isSignedIn = !!session
   const { addItem } = useCartStore()
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -163,8 +164,8 @@ export default function WishlistPage() {
 
   const downloadWishlist = () => {
     const wishlistData = {
-      user: user?.firstName + ' ' + user?.lastName,
-      email: user?.emailAddresses[0]?.emailAddress,
+      user: session?.user?.name || 'User',
+      email: session?.user?.email,
       exportDate: new Date().toISOString(),
       items: wishlistItems.map(item => ({
         name: item.product.name,
@@ -193,8 +194,8 @@ export default function WishlistPage() {
   }
 
   const shareWishlist = () => {
-    const wishlistUrl = `${window.location.origin}/wishlist/shared/${user?.id}`
-    const title = `${user?.firstName}'s Wishlist - Akamba Handicraft`
+    const wishlistUrl = `${window.location.origin}/wishlist/shared/${session?.user?.id}`
+    const title = `${session?.user?.name || 'My'} Wishlist - Akamba Handicraft`
     const description = `Check out my favorite handcrafted African artifacts! ${wishlistItems.length} amazing pieces.`
     
     return (

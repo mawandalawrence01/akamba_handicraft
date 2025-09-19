@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
             id: true,
             firstName: true,
             lastName: true,
-            imageUrl: true,
+            image: true,
             city: true,
             country: true
           }
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       rating: review.rating,
       content: review.content,
       title: review.title,
-      avatar: review.user.imageUrl,
+      avatar: review.user.image,
       productName: review.product.name,
       productImage: review.product.images[0]?.url,
       date: review.createdAt,

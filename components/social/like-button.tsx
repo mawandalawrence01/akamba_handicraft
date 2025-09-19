@@ -6,7 +6,7 @@ import { Heart, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'react-hot-toast'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from 'next-auth/react'
 
 export interface LikeButtonProps {
   productId: string
@@ -27,7 +27,8 @@ export function LikeButton({
   showCount = true,
   className = ''
 }: LikeButtonProps) {
-  const { user, isSignedIn } = useUser()
+  const { data: session } = useSession()
+  const isSignedIn = !!session
   const [isLiked, setIsLiked] = useState(initialLiked)
   const [likeCount, setLikeCount] = useState(initialLikeCount)
   const [isLoading, setIsLoading] = useState(false)
@@ -35,13 +36,13 @@ export function LikeButton({
 
   useEffect(() => {
     setMounted(true)
-    if (isSignedIn && user) {
+    if (isSignedIn && session?.user) {
       checkLikeStatus()
     }
-  }, [isSignedIn, user, productId])
+  }, [isSignedIn, session?.user, productId])
 
   const checkLikeStatus = async () => {
-    if (!isSignedIn || !user) return
+    if (!isSignedIn || !session?.user) return
 
     try {
       const response = await fetch(`/api/products/${productId}/like`)

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth()
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
     const body = await request.json()
     
     const { downloadType, fileName, fileUrl, fileSize, productId } = body

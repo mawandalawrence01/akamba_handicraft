@@ -1,21 +1,24 @@
-import { User } from '@clerk/nextjs/server'
 import { prisma } from './prisma'
 
-export async function syncUserWithDatabase(clerkUser: User) {
+export async function syncUserWithDatabase(userData: {
+  id: string
+  email: string
+  name?: string
+  image?: string
+}) {
   try {
     const existingUser = await prisma.user.findUnique({
-      where: { clerkId: clerkUser.id }
+      where: { id: userData.id }
     })
 
     if (existingUser) {
       // Update existing user
       return await prisma.user.update({
-        where: { clerkId: clerkUser.id },
+        where: { id: userData.id },
         data: {
-          email: clerkUser.emailAddresses[0]?.emailAddress || '',
-          firstName: clerkUser.firstName,
-          lastName: clerkUser.lastName,
-          imageUrl: clerkUser.imageUrl,
+          email: userData.email,
+          name: userData.name,
+          image: userData.image,
           lastLoginAt: new Date(),
         }
       })
@@ -23,11 +26,10 @@ export async function syncUserWithDatabase(clerkUser: User) {
       // Create new user
       return await prisma.user.create({
         data: {
-          clerkId: clerkUser.id,
-          email: clerkUser.emailAddresses[0]?.emailAddress || '',
-          firstName: clerkUser.firstName,
-          lastName: clerkUser.lastName,
-          imageUrl: clerkUser.imageUrl,
+          id: userData.id,
+          email: userData.email,
+          name: userData.name,
+          image: userData.image,
           lastLoginAt: new Date(),
         }
       })
@@ -38,9 +40,9 @@ export async function syncUserWithDatabase(clerkUser: User) {
   }
 }
 
-export async function getUserFromDatabase(clerkId: string) {
+export async function getUserFromDatabase(userId: string) {
   return await prisma.user.findUnique({
-    where: { clerkId },
+    where: { id: userId },
     include: {
       orders: {
         orderBy: { createdAt: 'desc' },

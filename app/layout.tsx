@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from '@clerk/nextjs';
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthSessionProvider } from "@/components/auth/session-provider";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
@@ -27,11 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <AuthSessionProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
@@ -41,8 +41,8 @@ export default function RootLayout({
             {children}
             <Toaster position="top-right" />
           </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </AuthSessionProvider>
+      </body>
+    </html>
   );
 }

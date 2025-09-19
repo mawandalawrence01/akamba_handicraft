@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 interface RouteParams {
@@ -13,7 +14,8 @@ export async function DELETE(
   { params }: RouteParams
 ) {
   try {
-    const { userId } = await auth()
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
     const { id: itemId } = await params
 
     if (!userId) {

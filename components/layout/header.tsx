@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useUser, UserButton } from '@clerk/nextjs'
+import { useSession, signOut } from 'next-auth/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, Search, Menu, X, Heart, Sparkles, Globe, Award } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,8 @@ const navigation = [
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const { user, isSignedIn } = useUser()
+  const { data: session } = useSession()
+  const isSignedIn = !!session
   const { items } = useCartStore()
 
   const cartItemsCount = items.reduce((total, item) => total + item.quantity, 0)
@@ -208,14 +209,19 @@ export function Header() {
             {isSignedIn ? (
               <div className="relative group">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                <UserButton 
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: "hover:scale-105 transition-transform duration-300"
-                    }
-                  }}
-                />
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white font-medium text-sm">
+                    {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || 'U'}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="text-xs text-gray-600 hover:text-amber-600"
+                  >
+                    Sign Out
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="flex items-center space-x-1 md:space-x-2">

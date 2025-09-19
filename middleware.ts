@@ -1,44 +1,54 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
 
-const isPublicRoute = createRouteMatcher([
-  '/',
-  '/products(.*)',
-  '/categories(.*)',
-  '/artisans(.*)',
-  '/blog(.*)',
-  '/about',
-  '/contact',
-  '/cart(.*)', // Public cart page
-  '/checkout(.*)', // Public checkout page
-  '/wishlist(.*)', // Public wishlist page
-  '/api/webhooks(.*)',
-  '/api/categories(.*)', // Public categories API
-  '/api/products(.*)', // Public products API
-  '/api/artisans(.*)', // Public artisans API
-  '/api/testimonials(.*)', // Public testimonials API
-  '/api/wishlist(.*)', // Public wishlist API
-  '/api/social(.*)', // Public social API
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/admin(.*)', // Allow admin routes to handle their own auth
-  '/api/admin(.*)', // Allow admin API routes to handle their own auth
-])
-
-export default clerkMiddleware(async (auth, req) => {
-  // Allow public routes (including admin routes)
-  if (isPublicRoute(req)) {
+export default withAuth(
+  function middleware(req) {
+    // Allow the request to continue
     return NextResponse.next()
-  }
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        const { pathname } = req.nextUrl
+        
+        // Public routes that don't require authentication
+        const publicRoutes = [
+          '/',
+          '/products',
+          '/categories',
+          '/artisans',
+          '/blog',
+          '/about',
+          '/contact',
+          '/cart',
+          '/checkout',
+          '/wishlist',
+          '/sign-in',
+          '/sign-up',
+          '/api/auth',
+          '/api/categories',
+          '/api/products',
+          '/api/artisans',
+          '/api/testimonials',
+          '/api/social',
+        ]
 
-  // For protected routes, check Clerk authentication
-  const { userId } = await auth()
-  if (!userId) {
-    return Response.redirect(new URL('/sign-in', req.url))
-  }
+        // Check if the route is public
+        const isPublicRoute = publicRoutes.some(route => 
+          pathname === route || pathname.startsWith(route + '/')
+        )
 
-  return NextResponse.next()
-})
+        // Allow public routes and admin routes (admin has its own auth)
+        if (isPublicRoute || pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+          return true
+        }
+
+        // For protected routes, require authentication
+        return !!token
+      },
+    },
+  }
+)
 
 export const config = {
   matcher: [

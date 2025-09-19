@@ -1,3 +1,5 @@
+'use client'
+
 import { Header } from '@/components/layout/header'
 import { Hero } from '@/components/sections/hero'
 import { FeaturedProducts } from '@/components/sections/featured-products'
@@ -5,10 +7,20 @@ import { Categories } from '@/components/sections/categories'
 import { Testimonials } from '@/components/sections/testimonials'
 import { Newsletter } from '@/components/sections/newsletter'
 import { Footer } from '@/components/layout/footer'
+import { GoogleOneTap } from '@/components/auth/google-one-tap'
 
 export default function Home() {
   return (
     <div className="min-h-screen">
+      <GoogleOneTap 
+        onSuccess={() => {
+          // User successfully signed in, they'll be redirected automatically
+          console.log('User signed in successfully')
+        }}
+        onError={(error) => {
+          console.error('Google One Tap error:', error)
+        }}
+      />
       <Header />
       <main>
         <Hero />
