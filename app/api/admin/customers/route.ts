@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
         { firstName: { contains: search, mode: 'insensitive' } },
         { lastName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } }
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
         where,
         select: {
           id: true,
+          name: true,
           firstName: true,
           lastName: true,
           email: true,
@@ -93,7 +95,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: customer.id,
-        name: `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || 'Unknown',
+        name: customer.name || `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || customer.email.split('@')[0] || 'Unknown',
         email: customer.email,
         phone: customer.phone,
         avatar: customer.image,
