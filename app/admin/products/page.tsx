@@ -295,15 +295,15 @@ export default function AdminProductsPage() {
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               {/* Search */}
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
                   type="search"
                   placeholder="Search products, artisans, categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
 
               {/* Controls */}
               <div className="flex items-center gap-4">
@@ -375,25 +375,25 @@ export default function AdminProductsPage() {
             </div>
 
             {/* Products */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-amber-600" />
-                  Products ({filteredProducts.length})
-                </CardTitle>
-                <CardDescription>
-                  Manage your product catalog and inventory
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-amber-600" />
+              Products ({filteredProducts.length})
+            </CardTitle>
+            <CardDescription>
+              Manage your product catalog and inventory
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
                   <div className={
                     viewMode === 'grid' 
                       ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
                       : 'space-y-4'
                   }>
                     {[...Array(6)].map((_, i) => (
-                      <div key={i} className="animate-pulse">
+                  <div key={i} className="animate-pulse">
                         {viewMode === 'grid' ? (
                           <Card className="overflow-hidden">
                             <div className="aspect-square bg-gray-200"></div>
@@ -434,16 +434,16 @@ export default function AdminProductsPage() {
 
                       return (
                         <motion.div
-                          key={product.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: index * 0.1 }}
                         >
                           {viewMode === 'grid' ? (
                             <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md">
                               <div className="relative aspect-square overflow-hidden">
                                 {primaryImage && getImageUrl(primaryImage.url) ? (
-                                  <Image
+                                <Image
                                     src={getImageUrl(primaryImage.url)!}
                                     alt={primaryImage.altText || product.name}
                                     fill
@@ -453,12 +453,12 @@ export default function AdminProductsPage() {
                                       console.error('Image failed to load:', primaryImage.url)
                                       e.currentTarget.style.display = 'none'
                                     }}
-                                  />
-                                ) : (
+                                />
+                              ) : (
                                   <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                                     <Package className="h-12 w-12 text-gray-400" />
-                                  </div>
-                                )}
+                                </div>
+                              )}
                                 
                                 {/* Badges */}
                                 <div className="absolute top-3 left-3 flex flex-col gap-2">
@@ -468,14 +468,14 @@ export default function AdminProductsPage() {
                                   {discountPercentage > 0 && (
                                     <Badge variant="destructive">
                                       {discountPercentage}% OFF
-                                    </Badge>
+                          </Badge>
                                   )}
-                                  <Badge 
-                                    variant={product.isActive ? "default" : "secondary"}
-                                    className={product.isActive ? "bg-green-100 text-green-800" : ""}
-                                  >
-                                    {product.isActive ? 'Active' : 'Inactive'}
-                                  </Badge>
+                              <Badge 
+                                variant={product.isActive ? "default" : "secondary"}
+                                className={product.isActive ? "bg-green-100 text-green-800" : ""}
+                              >
+                                {product.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
                                 </div>
 
                                 {/* Action Buttons */}
@@ -521,8 +521,8 @@ export default function AdminProductsPage() {
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </div>
-                                </div>
-                              </div>
+                            </div>
+                          </div>
 
                               <CardContent className="p-4">
                                 <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
@@ -535,14 +535,14 @@ export default function AdminProductsPage() {
                                 </h3>
 
                                 <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                                  <div className="flex items-center gap-1">
-                                    <Eye className="h-4 w-4" />
-                                    {product.viewCount}
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <Heart className="h-4 w-4" />
-                                    {product.likeCount}
-                                  </div>
+                            <div className="flex items-center gap-1">
+                              <Eye className="h-4 w-4" />
+                              {product.viewCount}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Heart className="h-4 w-4" />
+                              {product.likeCount}
+                            </div>
                                   <div className="flex items-center gap-1">
                                     <Package className="h-4 w-4" />
                                     {product.stockQuantity}
@@ -607,7 +607,7 @@ export default function AdminProductsPage() {
                                           {product.name}
                                         </h3>
                                         <p className="text-gray-600 text-sm">by {product.artisan?.name || 'Akamba Artisan'}</p>
-                                      </div>
+                          </div>
                                       
                                       <div className="flex items-center gap-2">
                                         <Link href={`/products/${product.slug}`} target="_blank">
@@ -620,39 +620,39 @@ export default function AdminProductsPage() {
                                             <Edit className="h-4 w-4" />
                                           </Button>
                                         </Link>
-                                        <DropdownMenu>
-                                          <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon">
-                                              <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                          </DropdownMenuTrigger>
-                                          <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem 
-                                              onClick={() => handleToggleStatus(product.id, product.isActive)}
-                                              className="cursor-pointer"
-                                            >
-                                              <CheckCircle className="h-4 w-4 mr-2" />
-                                              {product.isActive ? 'Deactivate' : 'Activate'}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem 
-                                              onClick={() => handleToggleFeatured(product.id, product.isFeatured)}
-                                              className="cursor-pointer"
-                                            >
-                                              <Package className="h-4 w-4 mr-2" />
-                                              {product.isFeatured ? 'Unfeature' : 'Feature'}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem 
-                                              onClick={() => handleDeleteProduct(product.id)}
-                                              className="cursor-pointer text-red-600 focus:text-red-600"
-                                            >
-                                              <Trash2 className="h-4 w-4 mr-2" />
-                                              Delete Product
-                                            </DropdownMenuItem>
-                                          </DropdownMenuContent>
-                                        </DropdownMenu>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => handleToggleStatus(product.id, product.isActive)}
+                                className="cursor-pointer"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                {product.isActive ? 'Deactivate' : 'Activate'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleToggleFeatured(product.id, product.isFeatured)}
+                                className="cursor-pointer"
+                              >
+                                <Package className="h-4 w-4 mr-2" />
+                                {product.isFeatured ? 'Unfeature' : 'Feature'}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteProduct(product.id)}
+                                className="cursor-pointer text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Product
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                                       </div>
                                     </div>
 
@@ -684,7 +684,7 @@ export default function AdminProductsPage() {
                                       </div>
                                     </div>
                                   </div>
-                                </div>
+              </div>
                               </CardContent>
                             </Card>
                           )}
@@ -698,12 +698,12 @@ export default function AdminProductsPage() {
                       <Search className="h-12 w-12 text-gray-400" />
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-                    <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 mb-6">
                       {searchQuery || filterStatus !== 'all' || priceRange.min > 0 || priceRange.max < 1000
                         ? 'Try adjusting your search criteria or filters'
-                        : 'Get started by creating your first product'
-                      }
-                    </p>
+                    : 'Get started by creating your first product'
+                  }
+                </p>
                     <Button
                       onClick={() => {
                         setSearchQuery('')
@@ -716,17 +716,17 @@ export default function AdminProductsPage() {
                       Clear Filters
                     </Button>
                     {(!searchQuery && filterStatus === 'all' && priceRange.min === 0 && priceRange.max === 1000) && (
-                      <Link href="/admin/products/new">
-                        <Button>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Your First Product
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
+                  <Link href="/admin/products/new">
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Your First Product
+                    </Button>
+                  </Link>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            )}
+          </CardContent>
+        </Card>
           </div>
         </div>
 
