@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { 
   ArrowLeft, 
@@ -61,6 +62,15 @@ export default function AddProductPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [previewMode, setPreviewMode] = useState(false)
+
+  // Helper function to ensure image URLs are properly formatted
+  const getImageUrl = (url: string) => {
+    if (!url) return null
+    // If URL already starts with /, return as is
+    if (url.startsWith('/')) return url
+    // If URL doesn't start with /, add it
+    return `/${url}`
+  }
 
   // Form state
   const [formData, setFormData] = useState({
@@ -395,15 +405,14 @@ export default function AddProductPage() {
                   <div className="space-y-2">
                     <Label htmlFor="artisanId">Artisan</Label>
                     <Select 
-                      value={formData.artisanId} 
-                      onValueChange={(value) => handleInputChange('artisanId', value)}
+                      value={formData.artisanId || undefined} 
+                      onValueChange={(value) => handleInputChange('artisanId', value || '')}
                       disabled={loadingData}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={loadingData ? "Loading artisans..." : "Select artisan (optional)"} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No artisan selected</SelectItem>
                         {artisans.map((artisan) => (
                           <SelectItem key={artisan.id} value={artisan.id}>
                             {artisan.name}
@@ -589,7 +598,13 @@ export default function AddProductPage() {
                   <div className="mt-4 space-y-2">
                     {images.map((image, index) => (
                       <div key={image.id} className="flex items-center gap-2 p-2 border rounded">
-                        <img src={image.url} alt={image.altText} className="w-12 h-12 object-cover rounded" />
+                        <Image 
+                          src={getImageUrl(image.url) || image.url} 
+                          alt={image.altText} 
+                          width={48} 
+                          height={48} 
+                          className="object-cover rounded" 
+                        />
                         <div className="flex-1">
                           <p className="text-sm font-medium">{image.altText}</p>
                           {image.isPrimary && (

@@ -1,7 +1,7 @@
 "use client"
 
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 export interface CartItem {
   id: string
@@ -38,6 +38,7 @@ export const useCartStore = create<CartState>()(
             
             if (newQuantity <= maxQty) {
               return {
+                ...state,
                 items: state.items.map(i =>
                   i.productId === item.productId
                     ? { ...i, quantity: newQuantity }
@@ -48,6 +49,7 @@ export const useCartStore = create<CartState>()(
             return state // Don't add if max quantity reached
           } else {
             return {
+              ...state,
               items: [...state.items, { ...item, quantity: 1 }]
             }
           }
@@ -56,6 +58,7 @@ export const useCartStore = create<CartState>()(
       
       removeItem: (productId) => {
         set((state) => ({
+          ...state,
           items: state.items.filter(item => item.productId !== productId)
         }))
       },
@@ -67,6 +70,7 @@ export const useCartStore = create<CartState>()(
         }
         
         set((state) => ({
+          ...state,
           items: state.items.map(item =>
             item.productId === productId
               ? { ...item, quantity: Math.min(quantity, item.maxQuantity || Infinity) }
@@ -76,7 +80,7 @@ export const useCartStore = create<CartState>()(
       },
       
       clearCart: () => {
-        set({ items: [] })
+        set((state) => ({ ...state, items: [] }))
       },
       
       getTotalPrice: () => {
@@ -89,6 +93,8 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'cart-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ items: state.items }),
     }
   )
 )

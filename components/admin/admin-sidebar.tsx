@@ -30,6 +30,7 @@ import { adminTheme, designSystem } from '@/lib/design-system'
 interface AdminSidebarProps {
   collapsed?: boolean
   onToggle?: () => void
+  isOpen?: boolean
 }
 
 interface NavItem {
@@ -66,6 +67,11 @@ const navigation: NavItem[] = [
     name: 'Customers',
     href: '/admin/customers',
     icon: Users,
+  },
+  {
+    name: 'Artisans',
+    href: '/admin/artisans',
+    icon: Shield,
   },
   {
     name: 'Analytics',
@@ -129,7 +135,7 @@ const navigation: NavItem[] = [
   },
 ]
 
-export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed = false, onToggle, isOpen = false }: AdminSidebarProps) {
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>(['Products', 'Analytics'])
 
@@ -228,12 +234,10 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={cn(
         "fixed left-0 top-0 z-40 h-full bg-gradient-to-b from-gray-900 to-gray-800 border-r border-gray-700 transition-all duration-300",
+        "hidden lg:block",
+        isOpen && "lg:hidden block",
         collapsed ? "w-20" : "w-72"
       )}
-      style={{ 
-        backgroundColor: adminTheme.sidebar.backgroundColor,
-        width: collapsed ? adminTheme.sidebar.collapsedWidth : adminTheme.sidebar.width
-      }}
     >
       {/* Sidebar Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-700">

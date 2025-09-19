@@ -16,7 +16,6 @@ async function main() {
         name: 'Sculptures',
         slug: 'sculptures',
         description: 'Traditional and contemporary wooden sculptures',
-        image: '/picture/caption (1).jpg',
         isActive: true,
         sortOrder: 1
       }
@@ -28,7 +27,6 @@ async function main() {
         name: 'Masks',
         slug: 'masks',
         description: 'Traditional ceremonial and decorative masks',
-        image: '/picture/caption (2).jpg',
         isActive: true,
         sortOrder: 2
       }
@@ -40,7 +38,6 @@ async function main() {
         name: 'Baskets',
         slug: 'baskets',
         description: 'Handwoven baskets and containers',
-        image: '/picture/caption (3).jpg',
         isActive: true,
         sortOrder: 3
       }
@@ -52,7 +49,6 @@ async function main() {
         name: 'Jewelry',
         slug: 'jewelry',
         description: 'Traditional beads, necklaces, and accessories',
-        image: '/picture/caption (4).jpg',
         isActive: true,
         sortOrder: 4
       }
@@ -64,7 +60,6 @@ async function main() {
         name: 'Pottery',
         slug: 'pottery',
         description: 'Traditional clay pots and ceramic items',
-        image: '/picture/caption (5).jpg',
         isActive: true,
         sortOrder: 5
       }
@@ -76,9 +71,52 @@ async function main() {
         name: 'Textiles',
         slug: 'textiles',
         description: 'Traditional fabrics, clothing, and home decor',
-        image: '/picture/caption (6).jpg',
         isActive: true,
         sortOrder: 6
+      }
+    }),
+    prisma.category.upsert({
+      where: { slug: 'bowls' },
+      update: {},
+      create: {
+        name: 'Bowls',
+        slug: 'bowls',
+        description: 'Functional and decorative serving pieces perfect for modern homes',
+        isActive: true,
+        sortOrder: 7
+      }
+    }),
+    prisma.category.upsert({
+      where: { slug: 'furniture' },
+      update: {},
+      create: {
+        name: 'Furniture',
+        slug: 'furniture',
+        description: 'Beautiful, functional furniture pieces including stools, chairs, and tables',
+        isActive: true,
+        sortOrder: 8
+      }
+    }),
+    prisma.category.upsert({
+      where: { slug: 'musical-instruments' },
+      update: {},
+      create: {
+        name: 'Musical Instruments',
+        slug: 'musical-instruments',
+        description: 'Traditional African musical instruments including drums, rattles, and string instruments',
+        isActive: true,
+        sortOrder: 9
+      }
+    }),
+    prisma.category.upsert({
+      where: { slug: 'home-decor' },
+      update: {},
+      create: {
+        name: 'Home Décor',
+        slug: 'home-decor',
+        description: 'Unique decorative pieces to bring African elegance to your home',
+        isActive: true,
+        sortOrder: 10
       }
     })
   ])
@@ -95,7 +133,6 @@ async function main() {
         name: 'John Mwangi',
         slug: 'john-mwangi',
         bio: 'Master woodcarver with over 20 years of experience in traditional Kikuyu carving techniques. Specializes in animal sculptures and ceremonial masks.',
-        image: '/picture/caption (7).jpg',
         phone: '+254 712 345 678',
         location: 'Nyeri, Kenya',
         experience: 20,
@@ -111,7 +148,6 @@ async function main() {
         name: 'Mary Wanjiku',
         slug: 'mary-wanjiku',
         bio: 'Expert basket weaver and textile artist. Creates beautiful handwoven baskets and traditional Kikuyu textiles using natural materials.',
-        image: '/picture/caption (8).jpg',
         phone: '+254 723 456 789',
         location: 'Murang\'a, Kenya',
         experience: 15,
@@ -127,7 +163,6 @@ async function main() {
         name: 'David Kiprotich',
         slug: 'david-kiprotich',
         bio: 'Traditional potter and jewelry maker. Creates authentic Kikuyu pottery and beaded jewelry using age-old techniques passed down through generations.',
-        image: '/picture/caption (9).jpg',
         phone: '+254 734 567 890',
         location: 'Kiambu, Kenya',
         experience: 12,
@@ -143,7 +178,6 @@ async function main() {
         name: 'Grace Akinyi',
         slug: 'grace-akinyi',
         bio: 'Multi-talented artisan specializing in contemporary interpretations of traditional crafts. Creates modern pieces inspired by Kikuyu heritage.',
-        image: '/picture/caption (10).jpg',
         phone: '+254 745 678 901',
         location: 'Nairobi, Kenya',
         experience: 8,
@@ -159,11 +193,70 @@ async function main() {
         name: 'Peter Mutua',
         slug: 'peter-mutua',
         bio: 'Master mask maker and ceremonial art specialist. Creates authentic traditional masks used in Kikuyu ceremonies and cultural events.',
-        image: '/picture/caption (11).jpg',
         phone: '+254 756 789 012',
         location: 'Machakos, Kenya',
         experience: 25,
         specialties: ['Ceremonial Masks', 'Cultural Art', 'Traditional Rituals'],
+        isVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.artisan.upsert({
+      where: { slug: 'peter-kioko' },
+      update: {},
+      create: {
+        name: 'Peter Kioko',
+        slug: 'peter-kioko',
+        bio: 'Expert in creating beautiful functional pieces that blend traditional craftsmanship with modern utility. Peter\'s bowls are sought after by collectors worldwide.',
+        phone: '+254 723 456 789',
+        location: 'Mombasa, Kenya',
+        experience: 8,
+        specialties: ['Functional Art', 'Wooden Bowls', 'Kitchen Utensils'],
+        isVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.artisan.upsert({
+      where: { slug: 'grace-muthoni' },
+      update: {},
+      create: {
+        name: 'Grace Muthoni',
+        slug: 'grace-muthoni',
+        bio: 'Perfectionist artist known for her detailed animal sculptures and miniature masterpieces. Grace\'s work captures the essence of African wildlife.',
+        phone: '+254 734 567 890',
+        location: 'Nairobi, Kenya',
+        experience: 10,
+        specialties: ['Animal Sculptures', 'Miniature Art', 'Gift Items'],
+        isVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.artisan.upsert({
+      where: { slug: 'samuel-musya' },
+      update: {},
+      create: {
+        name: 'Samuel Musya',
+        slug: 'samuel-musya',
+        bio: 'Veteran artisan with two decades of experience in creating historically significant pieces. Samuel is a living repository of Akamba cultural knowledge.',
+        phone: '+254 745 678 901',
+        location: 'Machakos, Kenya',
+        experience: 20,
+        specialties: ['Warrior Masks', 'Historical Pieces', 'Cultural Artifacts'],
+        isVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.artisan.upsert({
+      where: { slug: 'elizabeth-wanza' },
+      update: {},
+      create: {
+        name: 'Elizabeth Wanza',
+        slug: 'elizabeth-wanza',
+        bio: 'Rising star in furniture design, Elizabeth combines traditional techniques with contemporary aesthetics to create unique home furnishing pieces.',
+        phone: '+254 756 789 012',
+        location: 'Kitui, Kenya',
+        experience: 6,
+        specialties: ['Furniture', 'Home Décor', 'Modern Designs'],
         isVerified: true,
         isActive: true
       }
@@ -202,25 +295,7 @@ async function main() {
         metaTitle: 'Traditional Elephant Carving - Handmade Ebony Sculpture',
         metaDescription: 'Authentic hand-carved elephant sculpture from premium ebony wood. Traditional Kikuyu craftsmanship.',
         categoryId: categories[0].id, // Sculptures
-        artisanId: artisans[0].id, // John Mwangi
-        images: {
-          create: [
-            {
-              url: '/picture/caption (12).jpg',
-              altText: 'Traditional Elephant Carving - Front View',
-              sortOrder: 0,
-              isPrimary: true,
-              is360View: false
-            },
-            {
-              url: '/picture/caption (13).jpg',
-              altText: 'Traditional Elephant Carving - Side View',
-              sortOrder: 1,
-              isPrimary: false,
-              is360View: false
-            }
-          ]
-        }
+        artisanId: artisans[0].id // John Mwangi
       }
     }),
     prisma.product.upsert({
@@ -250,18 +325,7 @@ async function main() {
         metaTitle: 'Ceremonial Warrior Mask - Traditional Kikuyu Art',
         metaDescription: 'Authentic ceremonial warrior mask hand-carved for traditional Kikuyu ceremonies.',
         categoryId: categories[1].id, // Masks
-        artisanId: artisans[4].id, // Peter Mutua
-        images: {
-          create: [
-            {
-              url: '/picture/caption (14).jpg',
-              altText: 'Ceremonial Warrior Mask - Front View',
-              sortOrder: 0,
-              isPrimary: true,
-              is360View: false
-            }
-          ]
-        }
+        artisanId: artisans[4].id // Peter Mutua
       }
     }),
     prisma.product.upsert({
@@ -291,18 +355,7 @@ async function main() {
         metaTitle: 'Handwoven Storage Basket - Traditional Kikuyu Weaving',
         metaDescription: 'Beautiful handwoven storage basket made from natural fibers with traditional patterns.',
         categoryId: categories[2].id, // Baskets
-        artisanId: artisans[1].id, // Mary Wanjiku
-        images: {
-          create: [
-            {
-              url: '/picture/caption (15).jpg',
-              altText: 'Handwoven Storage Basket - Top View',
-              sortOrder: 0,
-              isPrimary: true,
-              is360View: false
-            }
-          ]
-        }
+        artisanId: artisans[1].id // Mary Wanjiku
       }
     }),
     prisma.product.upsert({
@@ -332,18 +385,7 @@ async function main() {
         metaTitle: 'Traditional Beaded Necklace - Authentic Kikuyu Jewelry',
         metaDescription: 'Beautiful traditional beaded necklace with authentic Kikuyu patterns and colors.',
         categoryId: categories[3].id, // Jewelry
-        artisanId: artisans[2].id, // David Kiprotich
-        images: {
-          create: [
-            {
-              url: '/picture/caption (16).jpg',
-              altText: 'Traditional Beaded Necklace - Full View',
-              sortOrder: 0,
-              isPrimary: true,
-              is360View: false
-            }
-          ]
-        }
+        artisanId: artisans[2].id // David Kiprotich
       }
     }),
     prisma.product.upsert({
@@ -373,23 +415,409 @@ async function main() {
         metaTitle: 'Traditional Water Pot - Authentic Kikuyu Pottery',
         metaDescription: 'Traditional clay water pot made using ancient pottery techniques and natural materials.',
         categoryId: categories[4].id, // Pottery
-        artisanId: artisans[2].id, // David Kiprotich
-        images: {
-          create: [
-            {
-              url: '/picture/caption (17).jpg',
-              altText: 'Traditional Water Pot - Side View',
-              sortOrder: 0,
-              isPrimary: true,
-              is360View: false
-            }
-          ]
-        }
+        artisanId: artisans[2].id // David Kiprotich
       }
     })
   ])
 
   console.log(`✅ Created ${products.length} sample products`)
+
+  // Create sample users for reviews and customers
+  console.log('👥 Creating sample users...')
+  const sampleUsers = await Promise.all([
+    // Existing customers with reviews
+    prisma.user.upsert({
+      where: { email: 'sarah.johnson@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_sarah_johnson',
+        email: 'sarah.johnson@email.com',
+        firstName: 'Sarah',
+        lastName: 'Johnson',
+        imageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b047?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'New York',
+        country: 'USA',
+        loyaltyPoints: 1500,
+        isActive: true
+      }
+    }),
+    prisma.user.upsert({
+      where: { email: 'michael.chen@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_michael_chen',
+        email: 'michael.chen@email.com',
+        firstName: 'Michael',
+        lastName: 'Chen',
+        imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'London',
+        country: 'UK',
+        loyaltyPoints: 800,
+        isActive: true
+      }
+    }),
+    prisma.user.upsert({
+      where: { email: 'emma.rodriguez@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_emma_rodriguez',
+        email: 'emma.rodriguez@email.com',
+        firstName: 'Emma',
+        lastName: 'Rodriguez',
+        imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'Toronto',
+        country: 'Canada',
+        loyaltyPoints: 1200,
+        isActive: true
+      }
+    }),
+    // VIP Customers
+    prisma.user.upsert({
+      where: { email: 'grace.akinyi@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_grace_akinyi',
+        email: 'grace.akinyi@email.com',
+        firstName: 'Grace',
+        lastName: 'Akinyi',
+        imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'Nairobi',
+        country: 'Kenya',
+        phone: '+254 712 345 678',
+        loyaltyPoints: 2500,
+        isActive: true
+      }
+    }),
+    prisma.user.upsert({
+      where: { email: 'david.thompson@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_david_thompson',
+        email: 'david.thompson@email.com',
+        firstName: 'David',
+        lastName: 'Thompson',
+        imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'Sydney',
+        country: 'Australia',
+        phone: '+61 412 345 678',
+        loyaltyPoints: 1800,
+        isActive: true
+      }
+    }),
+    // Regular Customers
+    prisma.user.upsert({
+      where: { email: 'lisa.wang@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_lisa_wang',
+        email: 'lisa.wang@email.com',
+        firstName: 'Lisa',
+        lastName: 'Wang',
+        imageUrl: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'Singapore',
+        country: 'Singapore',
+        phone: '+65 8123 4567',
+        loyaltyPoints: 600,
+        isActive: true
+      }
+    }),
+    prisma.user.upsert({
+      where: { email: 'robert.martinez@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_robert_martinez',
+        email: 'robert.martinez@email.com',
+        firstName: 'Robert',
+        lastName: 'Martinez',
+        imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'Madrid',
+        country: 'Spain',
+        phone: '+34 612 345 678',
+        loyaltyPoints: 400,
+        isActive: true
+      }
+    }),
+    // Prospects (no orders yet)
+    prisma.user.upsert({
+      where: { email: 'james.wilson@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_james_wilson',
+        email: 'james.wilson@email.com',
+        firstName: 'James',
+        lastName: 'Wilson',
+        imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'Chicago',
+        country: 'USA',
+        phone: '+1 312 555 0123',
+        loyaltyPoints: 0,
+        isActive: true
+      }
+    }),
+    prisma.user.upsert({
+      where: { email: 'maria.garcia@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_maria_garcia',
+        email: 'maria.garcia@email.com',
+        firstName: 'Maria',
+        lastName: 'Garcia',
+        imageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b047?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'Barcelona',
+        country: 'Spain',
+        phone: '+34 612 345 679',
+        loyaltyPoints: 0,
+        isActive: true
+      }
+    }),
+    prisma.user.upsert({
+      where: { email: 'john.mwangi@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_john_mwangi',
+        email: 'john.mwangi@email.com',
+        firstName: 'John',
+        lastName: 'Mwangi',
+        imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'Nairobi',
+        country: 'Kenya',
+        phone: '+254 723 456 789',
+        loyaltyPoints: 0,
+        isActive: true
+      }
+    }),
+    // Inactive customers
+    prisma.user.upsert({
+      where: { email: 'peter.kimani@email.com' },
+      update: {},
+      create: {
+        clerkId: 'user_peter_kimani',
+        email: 'peter.kimani@email.com',
+        firstName: 'Peter',
+        lastName: 'Kimani',
+        imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3',
+        city: 'Kisumu',
+        country: 'Kenya',
+        phone: '+254 734 567 890',
+        loyaltyPoints: 200,
+        isActive: false
+      }
+    })
+  ])
+
+  console.log(`✅ Created ${sampleUsers.length} sample users`)
+
+  // Create sample reviews
+  console.log('⭐ Creating sample reviews...')
+  const reviews = await Promise.all([
+    // Sarah Johnson reviews
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[0].id,
+          productId: products[0].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'Absolutely stunning craftsmanship!',
+        content: 'The elephant sculpture I purchased is absolutely stunning! The craftsmanship is incredible and it arrived safely packaged. This piece has become the centerpiece of my living room.',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[0].id,
+        productId: products[0].id
+      }
+    }),
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[0].id,
+          productId: products[3].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'Beautiful traditional jewelry',
+        content: 'The necklace is beautifully crafted with attention to detail. The traditional patterns are authentic and the quality is excellent. Perfect for special occasions.',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[0].id,
+        productId: products[3].id
+      }
+    }),
+    // Michael Chen reviews
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[1].id,
+          productId: products[1].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'Outstanding quality and authentic artistry',
+        content: 'Outstanding quality and authentic African artistry. The shipping was fast and the customer service was exceptional. I will definitely be ordering more pieces for my collection.',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[1].id,
+        productId: products[1].id
+      }
+    }),
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[1].id,
+          productId: products[0].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'Incredible attention to detail',
+        content: 'The elephant carving exceeded all my expectations. The wood grain is beautiful and the carving is so detailed. It\'s clear this was made by a master craftsman.',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[1].id,
+        productId: products[0].id
+      }
+    }),
+    // Emma Rodriguez reviews
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[2].id,
+          productId: products[2].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'Beautiful and functional',
+        content: 'Each piece tells a story and you can feel the love and skill that went into creating it. The wooden bowl I ordered is both beautiful and functional. Highly recommended!',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[2].id,
+        productId: products[2].id
+      }
+    }),
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[2].id,
+          productId: products[1].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 4,
+        title: 'Authentic cultural piece',
+        content: 'The ceremonial mask is a beautiful addition to my collection. The craftsmanship is authentic and the colors are vibrant. It arrived well-packaged and in perfect condition.',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[2].id,
+        productId: products[1].id
+      }
+    }),
+    // Grace Akinyi reviews (VIP customer)
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[3].id,
+          productId: products[0].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'Perfect representation of our culture',
+        content: 'As a Kenyan, I\'m proud to see our traditional crafts being shared with the world. This elephant carving is exceptional and represents our culture beautifully.',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[3].id,
+        productId: products[0].id
+      }
+    }),
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[3].id,
+          productId: products[2].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'Traditional craftsmanship at its finest',
+        content: 'The basket weaving technique is exactly as I remember from my grandmother\'s time. The quality is outstanding and it\'s being used daily in my kitchen.',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[3].id,
+        productId: products[2].id
+      }
+    }),
+    // David Thompson reviews
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[4].id,
+          productId: products[1].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'Amazing experience from start to finish',
+        content: 'The giraffe sculpture exceeded my expectations and arrived in perfect condition. The attention to detail is remarkable and it\'s become a conversation piece in my home.',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[4].id,
+        productId: products[1].id
+      }
+    }),
+    // Lisa Wang reviews
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[5].id,
+          productId: products[3].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'The authenticity and quality is unmatched',
+        content: 'I love knowing that my purchase supports skilled artisans and preserves traditional craftsmanship. The jewelry set is beautiful and well-made.',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[5].id,
+        productId: products[3].id
+      }
+    }),
+    // Robert Martinez reviews
+    prisma.review.upsert({
+      where: { 
+        userId_productId: {
+          userId: sampleUsers[6].id,
+          productId: products[1].id
+        }
+      },
+      update: {},
+      create: {
+        rating: 5,
+        title: 'Incredible craftsmanship and beautiful pieces',
+        content: 'The mask I ordered is a work of art that brings cultural richness to my home. The shipping to Europe was surprisingly quick!',
+        isVerified: true,
+        isActive: true,
+        userId: sampleUsers[6].id,
+        productId: products[1].id
+      }
+    })
+  ])
+
+  console.log(`✅ Created ${reviews.length} sample reviews`)
 
   // Create admin user
   console.log('👤 Creating admin user...')

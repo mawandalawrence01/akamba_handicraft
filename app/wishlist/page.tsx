@@ -119,10 +119,10 @@ export default function WishlistPage() {
 
     addItem({
       id: product.id,
+      productId: product.id,
       name: product.name,
       price: product.price,
       image: product.images[0]?.url || '',
-      quantity: 1,
       maxQuantity: product.stockQuantity
     })
 

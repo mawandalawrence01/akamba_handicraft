@@ -132,7 +132,7 @@ export default function AboutPage() {
                 </h1>
                 
                 <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                  For over 15 years, we've been bridging the gap between traditional African craftsmanship 
+                  For over 15 years, we&apos;ve been bridging the gap between traditional African craftsmanship 
                   and the global marketplace, ensuring that the rich cultural heritage of the Akamba people 
                   continues to thrive in the modern world.
                 </p>
@@ -386,7 +386,7 @@ export default function AboutPage() {
               </h2>
               <p className="text-xl text-amber-100 mb-8">
                 Be part of preserving African cultural heritage while supporting local artisans. 
-                Every purchase makes a difference in a craftsperson's life.
+                Every purchase makes a difference in a craftsperson&apos;s life.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/products">

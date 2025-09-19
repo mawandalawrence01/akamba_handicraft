@@ -13,7 +13,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [adminUser, setAdminUser] = useState<any>(null)
+  const [adminUser, setAdminUser] = useState<{ id: string; name: string; email: string } | null>(null)
   const router = useRouter()
   const pathname = usePathname()
 

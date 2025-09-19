@@ -3,9 +3,9 @@ import { requireAdmin, logAdminActivity } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function GET(
@@ -14,7 +14,7 @@ export async function GET(
 ) {
   try {
     await requireAdmin(request)
-    const productId = params.id
+    const { id: productId } = await params
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -61,7 +61,7 @@ export async function PATCH(
 ) {
   try {
     const admin = await requireAdmin(request)
-    const productId = params.id
+    const { id: productId } = await params
     const body = await request.json()
 
     const product = await prisma.product.findUnique({
@@ -75,23 +75,78 @@ export async function PATCH(
       )
     }
 
-    // Update product
-    const updatedProduct = await prisma.product.update({
-      where: { id: productId },
-      data: {
-        ...body,
-        updatedAt: new Date(),
-        // Ensure inStock is updated based on stockQuantity
-        ...(body.stockQuantity !== undefined && {
-          inStock: parseInt(body.stockQuantity) > 0
+    // Extract images and videos from body
+    const { images, videos, ...productData } = body
+
+    // Update product with transaction to handle images and videos
+    const updatedProduct = await prisma.$transaction(async (tx) => {
+      // Update the main product data
+      const product = await tx.product.update({
+        where: { id: productId },
+        data: {
+          ...productData,
+          updatedAt: new Date(),
+          // Ensure inStock is updated based on stockQuantity
+          ...(productData.stockQuantity !== undefined && {
+            inStock: parseInt(productData.stockQuantity) > 0
+          })
+        }
+      })
+
+      // Handle images update if provided
+      if (images !== undefined) {
+        // Delete existing images
+        await tx.productImage.deleteMany({
+          where: { productId }
         })
-      },
-      include: {
-        category: true,
-        artisan: true,
-        images: { orderBy: { sortOrder: 'asc' } },
-        videos: { orderBy: { sortOrder: 'asc' } }
+
+        // Create new images
+        if (images.length > 0) {
+          await tx.productImage.createMany({
+            data: images.map((img: any) => ({
+              productId,
+              url: img.url,
+              altText: img.altText,
+              sortOrder: img.sortOrder,
+              isPrimary: img.isPrimary,
+              is360View: img.is360View
+            }))
+          })
+        }
       }
+
+      // Handle videos update if provided
+      if (videos !== undefined) {
+        // Delete existing videos
+        await tx.productVideo.deleteMany({
+          where: { productId }
+        })
+
+        // Create new videos
+        if (videos.length > 0) {
+          await tx.productVideo.createMany({
+            data: videos.map((video: any) => ({
+              productId,
+              url: video.url,
+              title: video.title,
+              description: video.description,
+              duration: video.duration,
+              sortOrder: video.sortOrder
+            }))
+          })
+        }
+      }
+
+      // Return the updated product with relations
+      return await tx.product.findUnique({
+        where: { id: productId },
+        include: {
+          category: true,
+          artisan: true,
+          images: { orderBy: { sortOrder: 'asc' } },
+          videos: { orderBy: { sortOrder: 'asc' } }
+        }
+      })
     })
 
     // Log admin activity
@@ -128,7 +183,7 @@ export async function DELETE(
 ) {
   try {
     const admin = await requireAdmin(request)
-    const productId = params.id
+    const { id: productId } = await params
 
     const product = await prisma.product.findUnique({
       where: { id: productId },

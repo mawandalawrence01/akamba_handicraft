@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Search, Filter, Grid, List, Star, Heart, ShoppingCart, Eye, SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,36 @@ import { useCartStore } from '@/lib/stores/cart-store'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { toast } from 'react-hot-toast'
+
+interface Product {
+  id: string
+  name: string
+  slug: string
+  price: number
+  compareAtPrice?: number
+  stockQuantity: number
+  isActive: boolean
+  isFeatured: boolean
+  inStock: boolean
+  viewCount: number
+  likeCount: number
+  createdAt: string
+  category: {
+    id: string
+    name: string
+    slug: string
+  }
+  artisan?: {
+    id: string
+    name: string
+  }
+  images: Array<{
+    id: string
+    url: string
+    isPrimary: boolean
+    altText?: string
+  }>
+}
 
 // Mock product data - replace with actual API calls
 const mockProducts = [
@@ -109,8 +140,10 @@ const categories = [
 ]
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState(mockProducts)
-  const [filteredProducts, setFilteredProducts] = useState(mockProducts)
+  const [products, setProducts] = useState<Product[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Array<{id: string, name: string, count: number}>>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState('featured')
@@ -119,6 +152,55 @@ export default function ProductsPage() {
   const [wishlist, setWishlist] = useState<Set<string>>(new Set())
   const { addItem } = useCartStore()
 
+  // Fetch products and categories
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      try {
+        // Fetch both products and categories in parallel
+        const [productsResponse, categoriesResponse] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/categories')
+        ])
+
+        let productsData = null
+        let categoriesData = null
+
+        // Process products response
+        if (productsResponse.ok) {
+          productsData = await productsResponse.json()
+          setProducts(productsData.products || [])
+        }
+
+        // Process categories response
+        if (categoriesResponse.ok) {
+          categoriesData = await categoriesResponse.json()
+          const categoriesWithCount = categoriesData.categories?.map((cat: any) => ({
+            id: cat.id,
+            name: cat.name,
+            count: cat.productCount || 0 // Use the actual product count from API
+          })) || []
+          
+          // Calculate total products count for "All Products"
+          const totalProducts = productsData?.products?.length || 0
+          
+          setCategories([
+            { id: 'all', name: 'All Products', count: totalProducts },
+            ...categoriesWithCount
+          ])
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        toast.error('Failed to load products')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  // Filter and sort products
   useEffect(() => {
     let filtered = products
 
@@ -126,20 +208,23 @@ export default function ProductsPage() {
     if (searchQuery) {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.artisan.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
+        (product.artisan?.name && product.artisan.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        product.category.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
     // Filter by category
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => product.category === selectedCategory)
+      filtered = filtered.filter(product => product.category.id === selectedCategory)
     }
 
     // Filter by price range
     filtered = filtered.filter(product => 
       product.price >= priceRange.min && product.price <= priceRange.max
     )
+
+    // Filter only active products
+    filtered = filtered.filter(product => product.isActive)
 
     // Sort products
     switch (sortBy) {
@@ -149,11 +234,8 @@ export default function ProductsPage() {
       case 'price-high':
         filtered.sort((a, b) => b.price - a.price)
         break
-      case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating)
-        break
       case 'newest':
-        filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0))
+        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         break
       default: // featured
         filtered.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0))
@@ -174,13 +256,14 @@ export default function ProductsPage() {
     setWishlist(newWishlist)
   }
 
-  const handleAddToCart = (product: typeof mockProducts[0]) => {
+  const handleAddToCart = (product: Product) => {
+    const primaryImage = product.images.find(img => img.isPrimary) || product.images[0]
     addItem({
       id: product.id,
       productId: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: primaryImage?.url || '/placeholder-product.jpg',
     })
     toast.success('Added to cart!')
   }
@@ -363,141 +446,196 @@ export default function ProductsPage() {
             </div>
 
             {/* Products */}
-            {filteredProducts.length > 0 ? (
+            {isLoading ? (
               <div className={
                 viewMode === 'grid' 
                   ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
                   : 'space-y-4'
               }>
-                {filteredProducts.map((product, index) => (
-                  <motion.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                  >
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
                     {viewMode === 'grid' ? (
-                      <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md">
-                        <div className="relative aspect-square overflow-hidden">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          
-                          {/* Badges */}
-                          <div className="absolute top-3 left-3 flex flex-col gap-2">
-                            {product.isNew && (
-                              <Badge className="bg-green-500 text-white">New</Badge>
-                            )}
-                            {product.originalPrice && (
-                              <Badge variant="destructive">
-                                {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                              </Badge>
-                            )}
+                      <Card className="overflow-hidden">
+                        <div className="aspect-square bg-gray-200"></div>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card>
+                        <CardContent className="p-6">
+                          <div className="flex gap-6">
+                            <div className="w-32 h-32 bg-gray-200 rounded-lg"></div>
+                            <div className="flex-1 space-y-3">
+                              <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                              <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+                            </div>
                           </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : filteredProducts.length > 0 ? (
+              <div className={
+                viewMode === 'grid' 
+                  ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                  : 'space-y-4'
+              }>
+                {filteredProducts.map((product, index) => {
+                  const primaryImage = product.images.find(img => img.isPrimary) || product.images[0]
+                  const discountPercentage = product.compareAtPrice && product.compareAtPrice > product.price 
+                    ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+                    : 0
 
-                          {/* Action Buttons */}
-                          <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <Button
-                              size="icon"
-                              variant="secondary"
-                              className="h-8 w-8 bg-white/90 hover:bg-white"
-                              onClick={() => toggleWishlist(product.id)}
-                            >
-                              <Heart
-                                className={`h-4 w-4 ${
-                                  wishlist.has(product.id) ? 'fill-red-500 text-red-500' : ''
-                                }`}
+                  return (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                    >
+                      {viewMode === 'grid' ? (
+                        <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md">
+                          <div className="relative aspect-square overflow-hidden">
+                            {primaryImage ? (
+                              <Image
+                                src={primaryImage.url}
+                                alt={primaryImage.altText || product.name}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               />
-                            </Button>
+                            ) : (
+                              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                <span className="text-gray-400 text-sm">No Image</span>
+                              </div>
+                            )}
                             
-                            <Link href={`/products/${product.id}`}>
+                            {/* Badges */}
+                            <div className="absolute top-3 left-3 flex flex-col gap-2">
+                              {product.isFeatured && (
+                                <Badge className="bg-amber-500 text-white">Featured</Badge>
+                              )}
+                              {discountPercentage > 0 && (
+                                <Badge variant="destructive">
+                                  {discountPercentage}% OFF
+                                </Badge>
+                              )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                               <Button
                                 size="icon"
                                 variant="secondary"
                                 className="h-8 w-8 bg-white/90 hover:bg-white"
+                                onClick={() => toggleWishlist(product.id)}
                               >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </Link>
-                          </div>
-
-                          {/* Quick Add to Cart */}
-                          <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <Button
-                              className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-                              onClick={() => handleAddToCart(product)}
-                            >
-                              <ShoppingCart className="h-4 w-4 mr-2" />
-                              Add to Cart
-                            </Button>
-                          </div>
-                        </div>
-
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
-                            <span>{product.categoryName}</span>
-                            <span>by {product.artisan}</span>
-                          </div>
-
-                          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                            {product.name}
-                          </h3>
-
-                          <div className="flex items-center gap-1 mb-3">
-                            <div className="flex">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
+                                <Heart
                                   className={`h-4 w-4 ${
-                                    i < Math.floor(product.rating)
-                                      ? 'text-yellow-400 fill-current'
-                                      : 'text-gray-300'
+                                    wishlist.has(product.id) ? 'fill-red-500 text-red-500' : ''
                                   }`}
                                 />
-                              ))}
+                              </Button>
+                              
+                              <Link href={`/products/${product.slug}`}>
+                                <Button
+                                  size="icon"
+                                  variant="secondary"
+                                  className="h-8 w-8 bg-white/90 hover:bg-white"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </Link>
                             </div>
-                            <span className="text-sm text-gray-600">
-                              {product.rating} ({product.reviews})
-                            </span>
+
+                            {/* Quick Add to Cart */}
+                            <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <Button
+                                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                                onClick={() => handleAddToCart(product)}
+                                disabled={!product.inStock}
+                              >
+                                <ShoppingCart className="h-4 w-4 mr-2" />
+                                {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                              </Button>
+                            </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-lg text-gray-900">
-                              ${product.price}
-                            </span>
-                            {product.originalPrice && (
-                              <span className="text-sm text-gray-500 line-through">
-                                ${product.originalPrice}
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+                              <span>{product.category.name}</span>
+                              <span>by {product.artisan?.name || 'Akamba Artisan'}</span>
+                            </div>
+
+                            <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                              {product.name}
+                            </h3>
+
+                            <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-4 w-4" />
+                                {product.viewCount}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-4 w-4" />
+                                {product.likeCount}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-lg text-gray-900">
+                                ${product.price}
                               </span>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
+                              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                                <span className="text-sm text-gray-500 line-through">
+                                  ${product.compareAtPrice}
+                                </span>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
                     ) : (
                       <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
                         <CardContent className="p-6">
                           <div className="flex gap-6">
-                            <div className="w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden">
-                              <img
-                                src={product.image}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                              />
+                            <div className="w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                              {primaryImage ? (
+                                <Image
+                                  src={primaryImage.url}
+                                  alt={primaryImage.altText || product.name}
+                                  width={128}
+                                  height={128}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <span className="text-gray-400 text-xs">No Image</span>
+                                </div>
+                              )}
                             </div>
                             
                             <div className="flex-1">
                               <div className="flex justify-between items-start mb-2">
                                 <div>
                                   <div className="flex items-center gap-2 mb-1">
-                                    <Badge variant="outline">{product.categoryName}</Badge>
-                                    {product.isNew && <Badge className="bg-green-500">New</Badge>}
+                                    <Badge variant="outline">{product.category.name}</Badge>
+                                    {product.isFeatured && <Badge className="bg-amber-500 text-white">Featured</Badge>}
+                                    {discountPercentage > 0 && (
+                                      <Badge variant="destructive">
+                                        {discountPercentage}% OFF
+                                      </Badge>
+                                    )}
                                   </div>
                                   <h3 className="text-xl font-semibold text-gray-900 mb-1">
                                     {product.name}
                                   </h3>
-                                  <p className="text-gray-600 text-sm">by {product.artisan}</p>
+                                  <p className="text-gray-600 text-sm">by {product.artisan?.name || 'Akamba Artisan'}</p>
                                 </div>
                                 
                                 <div className="flex items-center gap-2">
@@ -512,7 +650,7 @@ export default function ProductsPage() {
                                       }`}
                                     />
                                   </Button>
-                                  <Link href={`/products/${product.id}`}>
+                                  <Link href={`/products/${product.slug}`}>
                                     <Button variant="outline" size="icon">
                                       <Eye className="h-4 w-4" />
                                     </Button>
@@ -520,22 +658,15 @@ export default function ProductsPage() {
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-1 mb-3">
-                                <div className="flex">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star
-                                      key={i}
-                                      className={`h-4 w-4 ${
-                                        i < Math.floor(product.rating)
-                                          ? 'text-yellow-400 fill-current'
-                                          : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
+                              <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                                <div className="flex items-center gap-1">
+                                  <Eye className="h-4 w-4" />
+                                  {product.viewCount} views
                                 </div>
-                                <span className="text-sm text-gray-600">
-                                  {product.rating} ({product.reviews} reviews)
-                                </span>
+                                <div className="flex items-center gap-1">
+                                  <Heart className="h-4 w-4" />
+                                  {product.likeCount} likes
+                                </div>
                               </div>
 
                               <div className="flex items-center justify-between">
@@ -543,9 +674,9 @@ export default function ProductsPage() {
                                   <span className="font-bold text-xl text-gray-900">
                                     ${product.price}
                                   </span>
-                                  {product.originalPrice && (
+                                  {product.compareAtPrice && product.compareAtPrice > product.price && (
                                     <span className="text-lg text-gray-500 line-through">
-                                      ${product.originalPrice}
+                                      ${product.compareAtPrice}
                                     </span>
                                   )}
                                 </div>
@@ -553,9 +684,10 @@ export default function ProductsPage() {
                                 <Button
                                   onClick={() => handleAddToCart(product)}
                                   className="bg-amber-600 hover:bg-amber-700"
+                                  disabled={!product.inStock}
                                 >
                                   <ShoppingCart className="h-4 w-4 mr-2" />
-                                  Add to Cart
+                                  {product.inStock ? 'Add to Cart' : 'Out of Stock'}
                                 </Button>
                               </div>
                             </div>
@@ -564,7 +696,8 @@ export default function ProductsPage() {
                       </Card>
                     )}
                   </motion.div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <div className="text-center py-16">

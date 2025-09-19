@@ -3,17 +3,18 @@ import { requireAdmin, logAdminActivity } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     await requireAdmin(request)
     
+    const { id: orderId } = await params
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: orderId },
       include: {
         user: {
           select: {
@@ -38,9 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             }
           }
         },
-        tracking: {
-          orderBy: { createdAt: 'desc' }
-        }
+        tracking: true
       }
     })
 
@@ -61,12 +60,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const admin = await requireAdmin(request)
+    const { id: orderId } = await params
     const body = await request.json()
     
     const { status, trackingNumber, notes } = body
 
     const order = await prisma.order.update({
-      where: { id: params.id },
+      where: { id: orderId },
       data: {
         status,
         ...(trackingNumber && { trackingNumber }),
@@ -88,11 +88,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (status) {
       await prisma.orderTracking.create({
         data: {
-          orderId: params.id,
+          orderId: orderId,
           status,
-          location: 'Admin Panel',
-          notes: notes || `Order status updated to ${status}`,
-          estimatedDelivery: status === 'SHIPPED' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null
+          location: 'Admin Panel'
         }
       })
     }

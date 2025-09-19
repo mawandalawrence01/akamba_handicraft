@@ -13,7 +13,7 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [adminUser, setAdminUser] = useState<any>(null)
+  const [adminUser, setAdminUser] = useState<{ id: string; name: string; email: string } | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -57,14 +57,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <AdminSidebar 
         collapsed={sidebarCollapsed}
         onToggle={handleSidebarToggle}
+        isOpen={sidebarOpen}
       />
 
       {/* Main content area */}
       <div 
-        className="transition-all duration-300"
-        style={{ 
-          marginLeft: sidebarCollapsed ? adminTheme.sidebar.collapsedWidth : adminTheme.sidebar.width 
-        }}
+        className={`transition-all duration-300 ${
+          sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'
+        } ml-0`}
       >
         {/* Header */}
         <AdminHeader 
@@ -73,7 +73,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         />
 
         {/* Page content */}
-        <main className="min-h-screen">
+        <main className="min-h-screen bg-gray-50">
           {children}
         </main>
       </div>

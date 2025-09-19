@@ -1,8 +1,10 @@
 "use client"
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { MapPin, Award, Star, Calendar, Heart, Eye } from 'lucide-react'
+import { MapPin, Star, Calendar, Heart, Eye, Users } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,132 +12,65 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 
-const artisans = [
-  {
-    id: 'john-mwangi',
-    name: 'John Mwangi',
-    specialties: ['Wildlife Sculptures', 'Elephant Carvings', 'Abstract Art'],
-    location: 'Machakos, Kenya',
-    experience: 15,
-    rating: 4.9,
-    reviewCount: 67,
-    productCount: 24,
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop',
-    bio: 'Master carver specializing in wildlife sculptures with over 15 years of experience. John\'s work has been featured in galleries across Kenya and internationally.',
-    joinedDate: '2008',
-    featured: true,
-    achievements: ['Master Craftsman Award 2020', 'Cultural Heritage Ambassador'],
-    recentWork: [
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1589571894960-20bbe2828d0a?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=200&auto=format&fit=crop'
-    ]
-  },
-  {
-    id: 'mary-mutua',
-    name: 'Mary Mutua',
-    specialties: ['Traditional Masks', 'Ceremonial Art', 'Cultural Pieces'],
-    location: 'Kitui, Kenya',
-    experience: 12,
-    rating: 4.8,
-    reviewCount: 45,
-    productCount: 18,
-    image: 'https://images.unsplash.com/photo-1494790108755-2616b612b047?q=80&w=400&auto=format&fit=crop',
-    bio: 'Renowned for her intricate mask designs that honor traditional Akamba ceremonies. Mary has preserved ancient techniques passed down through generations.',
-    joinedDate: '2011',
-    featured: true,
-    achievements: ['Traditional Arts Excellence Award', 'UNESCO Recognition'],
-    recentWork: [
-      'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1594736797933-d0ccef5ba6dd?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=200&auto=format&fit=crop'
-    ]
-  },
-  {
-    id: 'peter-kioko',
-    name: 'Peter Kioko',
-    specialties: ['Functional Art', 'Wooden Bowls', 'Kitchen Utensils'],
-    location: 'Mombasa, Kenya',
-    experience: 8,
-    rating: 4.7,
-    reviewCount: 32,
-    productCount: 15,
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop',
-    bio: 'Expert in creating beautiful functional pieces that blend traditional craftsmanship with modern utility. Peter\'s bowls are sought after by collectors worldwide.',
-    joinedDate: '2015',
-    featured: false,
-    achievements: ['Sustainable Crafts Award', 'Young Artisan of the Year 2019'],
-    recentWork: [
-      'https://images.unsplash.com/photo-1534224039826-c7a0eda0e6b3?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1615529328331-f8917597711f?q=80&w=200&auto=format&fit=crop'
-    ]
-  },
-  {
-    id: 'grace-muthoni',
-    name: 'Grace Muthoni',
-    specialties: ['Animal Sculptures', 'Miniature Art', 'Gift Items'],
-    location: 'Nairobi, Kenya',
-    experience: 10,
-    rating: 5.0,
-    reviewCount: 28,
-    productCount: 21,
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400&auto=format&fit=crop',
-    bio: 'Perfectionist artist known for her detailed animal sculptures and miniature masterpieces. Grace\'s work captures the essence of African wildlife.',
-    joinedDate: '2013',
-    featured: false,
-    achievements: ['Wildlife Conservation Art Award', 'Perfect Rating Achievement'],
-    recentWork: [
-      'https://images.unsplash.com/photo-1589571894960-20bbe2828d0a?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=200&auto=format&fit=crop'
-    ]
-  },
-  {
-    id: 'samuel-musya',
-    name: 'Samuel Musya',
-    specialties: ['Warrior Masks', 'Historical Pieces', 'Cultural Artifacts'],
-    location: 'Machakos, Kenya',
-    experience: 20,
-    rating: 4.6,
-    reviewCount: 89,
-    productCount: 31,
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop',
-    bio: 'Veteran artisan with two decades of experience in creating historically significant pieces. Samuel is a living repository of Akamba cultural knowledge.',
-    joinedDate: '2003',
-    featured: false,
-    achievements: ['Lifetime Achievement Award', 'Cultural Heritage Master', 'Museum Quality Recognition'],
-    recentWork: [
-      'https://images.unsplash.com/photo-1594736797933-d0ccef5ba6dd?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1615529328331-f8917597711f?q=80&w=200&auto=format&fit=crop'
-    ]
-  },
-  {
-    id: 'elizabeth-wanza',
-    name: 'Elizabeth Wanza',
-    specialties: ['Furniture', 'Home Décor', 'Modern Designs'],
-    location: 'Kitui, Kenya',
-    experience: 6,
-    rating: 4.5,
-    reviewCount: 23,
-    productCount: 12,
-    image: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?q=80&w=400&auto=format&fit=crop',
-    bio: 'Rising star in furniture design, Elizabeth combines traditional techniques with contemporary aesthetics to create unique home furnishing pieces.',
-    joinedDate: '2017',
-    featured: false,
-    achievements: ['Emerging Artist Award', 'Modern Craft Innovation Prize'],
-    recentWork: [
-      'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1615529328331-f8917597711f?q=80&w=200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1534224039826-c7a0eda0e6b3?q=80&w=200&auto=format&fit=crop'
-    ]
-  }
-]
+interface Artisan {
+  id: string
+  name: string
+  slug: string
+  bio: string
+  location: string
+  image?: string
+  experience: number
+  rating: number
+  reviewCount: number
+  productCount: number
+  recentWork: Array<{
+    id: string
+    name: string
+    price: number
+    image?: string
+    imageAlt?: string
+  }>
+  joinDate: string
+  specialties: string[]
+}
+
+// Helper function to get image URL
+const getImageUrl = (url: string | null) => {
+  if (!url) return null
+  // If URL already starts with /, return as is (local file)
+  if (url.startsWith('/')) return url
+  // If URL starts with http/https, return as is (external URL)
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  // If URL doesn't start with /, add it (assume local file)
+  return `/${url}`
+}
 
 export default function ArtisansPage() {
-  const featuredArtisans = artisans.filter(artisan => artisan.featured)
-  const otherArtisans = artisans.filter(artisan => !artisan.featured)
+  const [artisans, setArtisans] = useState<Artisan[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchArtisans = async () => {
+      try {
+        const response = await fetch('/api/artisans')
+        if (response.ok) {
+          const data = await response.json()
+          setArtisans(data.artisans || [])
+        } else {
+          console.error('Failed to fetch artisans')
+        }
+      } catch (error) {
+        console.error('Error fetching artisans:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchArtisans()
+  }, [])
+
+  // Since isFeatured doesn't exist in schema, show first 3 as featured and rest as others
+  const featuredArtisans = artisans.slice(0, 3)
+  const otherArtisans = artisans.slice(3)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -171,8 +106,17 @@ export default function ArtisansPage() {
             <p className="text-gray-600">Our most celebrated craftspeople with decades of experience</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {featuredArtisans.map((artisan, index) => (
+          {isLoading ? (
+            <div className="grid md:grid-cols-2 gap-8">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-96 bg-gray-200 rounded-lg"></div>
+                </div>
+              ))}
+            </div>
+          ) : featuredArtisans.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-8">
+              {featuredArtisans.map((artisan, index) => (
               <motion.div
                 key={artisan.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -196,7 +140,14 @@ export default function ArtisansPage() {
                       {/* Profile Image */}
                       <div className="absolute -bottom-16 left-6">
                         <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-                          <AvatarImage src={artisan.image} alt={artisan.name} />
+                          <AvatarImage 
+                            src={getImageUrl(artisan.image || '') || undefined} 
+                            alt={artisan.name}
+                            onError={(e) => {
+                              console.error('Avatar image failed to load:', artisan.image)
+                              e.currentTarget.style.display = 'none'
+                            }}
+                          />
                           <AvatarFallback className="text-2xl font-bold">
                             {artisan.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
@@ -244,7 +195,7 @@ export default function ArtisansPage() {
                         <div className="mb-4">
                           <h4 className="font-medium text-gray-900 mb-2">Specialties:</h4>
                           <div className="flex flex-wrap gap-2">
-                            {artisan.specialties.map((specialty, idx) => (
+                            {(artisan.specialties || []).map((specialty, idx) => (
                               <Badge key={idx} variant="outline" className="text-xs">
                                 {specialty}
                               </Badge>
@@ -252,30 +203,30 @@ export default function ArtisansPage() {
                           </div>
                         </div>
 
-                        {/* Achievements */}
-                        <div className="mb-6">
-                          <h4 className="font-medium text-gray-900 mb-2">Recent Achievements:</h4>
-                          <div className="space-y-1">
-                            {artisan.achievements.slice(0, 2).map((achievement, idx) => (
-                              <div key={idx} className="flex items-center gap-2">
-                                <Award className="h-3 w-3 text-amber-500" />
-                                <span className="text-sm text-gray-600">{achievement}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
 
                         {/* Recent Work */}
                         <div className="mb-6">
                           <h4 className="font-medium text-gray-900 mb-3">Recent Work:</h4>
                           <div className="grid grid-cols-3 gap-2">
-                            {artisan.recentWork.map((work, idx) => (
-                              <div key={idx} className="aspect-square rounded-lg overflow-hidden">
-                                <img
-                                  src={work}
-                                  alt={`${artisan.name}'s work ${idx + 1}`}
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                                />
+                            {(artisan.recentWork || []).map((work, idx) => (
+                              <div key={work.id} className="aspect-square rounded-lg overflow-hidden">
+                                {work.image && getImageUrl(work.image) ? (
+                                  <Image
+                                    src={getImageUrl(work.image)!}
+                                    alt={work.imageAlt || work.name}
+                                    width={100}
+                                    height={100}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                    onError={(e) => {
+                                      console.error('Recent work image failed to load:', work.image)
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                    <span className="text-gray-400 text-xs">No Image</span>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -288,7 +239,7 @@ export default function ArtisansPage() {
                             <div className="text-sm text-gray-600">Products</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-amber-600">Since {artisan.joinedDate}</div>
+                            <div className="text-2xl font-bold text-amber-600">Since {artisan.joinDate}</div>
                             <div className="text-sm text-gray-600">With Us</div>
                           </div>
                         </div>
@@ -311,7 +262,16 @@ export default function ArtisansPage() {
                 </Card>
               </motion.div>
             ))}
-          </div>
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No featured artisans found</h3>
+              <p className="text-gray-600">Check back later for featured master artisans</p>
+            </div>
+          )}
         </section>
 
         {/* All Artisans */}
@@ -326,8 +286,17 @@ export default function ArtisansPage() {
             <p className="text-gray-600">Meet all the skilled craftspeople in our community</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {otherArtisans.map((artisan, index) => (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-64 bg-gray-200 rounded-lg"></div>
+                </div>
+              ))}
+            </div>
+          ) : otherArtisans.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {otherArtisans.map((artisan, index) => (
               <motion.div
                 key={artisan.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -339,7 +308,14 @@ export default function ArtisansPage() {
                     {/* Profile */}
                     <div className="flex items-start gap-4 mb-4">
                       <Avatar className="w-16 h-16">
-                        <AvatarImage src={artisan.image} alt={artisan.name} />
+                        <AvatarImage 
+                          src={getImageUrl(artisan.image || '') || undefined} 
+                          alt={artisan.name}
+                          onError={(e) => {
+                            console.error('Avatar image failed to load:', artisan.image)
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
                         <AvatarFallback>
                           {artisan.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
@@ -377,14 +353,14 @@ export default function ArtisansPage() {
                     {/* Specialties */}
                     <div className="mb-4">
                       <div className="flex flex-wrap gap-1">
-                        {artisan.specialties.slice(0, 2).map((specialty, idx) => (
+                        {(artisan.specialties || []).slice(0, 2).map((specialty, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs">
                             {specialty}
                           </Badge>
                         ))}
-                        {artisan.specialties.length > 2 && (
+                        {(artisan.specialties || []).length > 2 && (
                           <Badge variant="outline" className="text-xs">
-                            +{artisan.specialties.length - 2}
+                            +{(artisan.specialties || []).length - 2}
                           </Badge>
                         )}
                       </div>
@@ -405,13 +381,25 @@ export default function ArtisansPage() {
                     {/* Recent Work Preview */}
                     <div className="mb-4">
                       <div className="grid grid-cols-3 gap-1">
-                        {artisan.recentWork.slice(0, 3).map((work, idx) => (
-                          <div key={idx} className="aspect-square rounded overflow-hidden">
-                            <img
-                              src={work}
-                              alt={`Work ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
+                        {(artisan.recentWork || []).slice(0, 3).map((work, idx) => (
+                          <div key={work.id} className="aspect-square rounded overflow-hidden">
+                            {work.image && getImageUrl(work.image) ? (
+                              <Image
+                                src={getImageUrl(work.image)!}
+                                alt={work.imageAlt || work.name}
+                                width={80}
+                                height={80}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  console.error('Recent work image failed to load:', work.image)
+                                  e.currentTarget.style.display = 'none'
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                <span className="text-gray-400 text-xs">No Image</span>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -432,7 +420,16 @@ export default function ArtisansPage() {
                 </Card>
               </motion.div>
             ))}
-          </div>
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No artisans found</h3>
+              <p className="text-gray-600">Check back later for new artisans</p>
+            </div>
+          )}
         </section>
 
         {/* Call to Action */}

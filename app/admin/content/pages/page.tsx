@@ -6,7 +6,6 @@ import {
   File, 
   Plus, 
   Search, 
-  Filter, 
   Edit, 
   Trash2, 
   Eye, 
@@ -18,16 +17,12 @@ import {
   Home,
   Info,
   Mail,
-  Phone,
-  MapPin,
   Download,
-  Upload,
   Save,
   Send,
   Settings
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -51,7 +46,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { AdminPageLayout, AdminCard, AdminStatsCard, AdminSection } from '@/components/admin/admin-page-layout'
 import { toast } from 'react-hot-toast'

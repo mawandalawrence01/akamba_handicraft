@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function GET(
@@ -13,8 +13,8 @@ export async function GET(
   { params }: RouteParams
 ) {
   try {
-    const { userId } = auth()
-    const productId = params.id
+    const { userId } = await auth()
+    const { id: productId } = await params
 
     if (!userId) {
       return NextResponse.json(
@@ -57,8 +57,8 @@ export async function POST(
   { params }: RouteParams
 ) {
   try {
-    const { userId } = auth()
-    const productId = params.id
+    const { userId } = await auth()
+    const { id: productId } = await params
 
     if (!userId) {
       return NextResponse.json(
@@ -153,8 +153,8 @@ export async function DELETE(
   { params }: RouteParams
 ) {
   try {
-    const { userId } = auth()
-    const productId = params.id
+    const { userId } = await auth()
+    const { id: productId } = await params
 
     if (!userId) {
       return NextResponse.json(

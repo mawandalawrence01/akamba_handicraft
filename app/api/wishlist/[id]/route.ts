@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function DELETE(
@@ -13,8 +13,8 @@ export async function DELETE(
   { params }: RouteParams
 ) {
   try {
-    const { userId } = auth()
-    const itemId = params.id
+    const { userId } = await auth()
+    const { id: itemId } = await params
 
     if (!userId) {
       return NextResponse.json(

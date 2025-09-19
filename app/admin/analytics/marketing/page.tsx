@@ -240,7 +240,7 @@ export default function MarketingAnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <AdminStatsCard
             title="Total Reach"
-            value={stats?.totalReach.toLocaleString() || '0'}
+            value={(stats?.totalReach || 0).toLocaleString()}
             icon={<Users className="h-5 w-5" />}
             change={{ value: 15.2, type: 'increase' }}
           />
@@ -350,7 +350,7 @@ export default function MarketingAnalyticsPage() {
                 <div className="grid grid-cols-4 gap-6 text-center">
                   <div>
                     <div className="text-sm text-gray-500">Reach</div>
-                    <div className="font-medium">{campaign.reach.toLocaleString()}</div>
+                    <div className="font-medium">{(campaign.reach || 0).toLocaleString()}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">Engagement</div>

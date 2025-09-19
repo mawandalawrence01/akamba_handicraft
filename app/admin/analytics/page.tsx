@@ -324,7 +324,7 @@ export default function AnalyticsPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.totalOrders.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{(analytics.totalOrders || 0).toLocaleString()}</div>
             <div className={`text-xs flex items-center ${analytics.ordersGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
               {analytics.ordersGrowth > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
               {formatPercentage(analytics.ordersGrowth)} from last period
@@ -338,7 +338,7 @@ export default function AnalyticsPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.totalVisitors.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{(analytics.totalVisitors || 0).toLocaleString()}</div>
             <div className={`text-xs flex items-center ${analytics.visitorsGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
               {analytics.visitorsGrowth > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
               {formatPercentage(analytics.visitorsGrowth)} from last period
@@ -482,7 +482,7 @@ export default function AnalyticsPage() {
                 <div key={stage.stage} className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">{stage.stage}</span>
-                    <span className="text-sm text-muted-foreground">{stage.count.toLocaleString()}</span>
+                    <span className="text-sm text-muted-foreground">{(stage.count || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Progress value={stage.percentage} className="flex-1 h-2" />
@@ -516,7 +516,7 @@ export default function AnalyticsPage() {
                     <span className="font-medium">{device.device}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">{device.users.toLocaleString()}</span>
+                    <span className="text-sm text-muted-foreground">{(device.users || 0).toLocaleString()}</span>
                     <Badge variant="secondary">{device.percentage}%</Badge>
                   </div>
                 </div>

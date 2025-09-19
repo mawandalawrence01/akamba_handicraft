@@ -381,11 +381,11 @@ export default function AdminDashboard() {
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm truncate">{product.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {product.views} views • {product.sales} sales
+                      {product.views || 0} views • {product.sales || 0} sales
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium text-sm">${product.revenue.toFixed(2)}</div>
+                    <div className="font-medium text-sm">${(product.revenue || 0).toFixed(2)}</div>
                   </div>
                 </div>
               )) || (
@@ -406,7 +406,7 @@ export default function AdminDashboard() {
                     <span className="font-medium">{device.device}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">{device.users.toLocaleString()}</span>
+                    <span className="text-sm text-muted-foreground">{(device.users || 0).toLocaleString()}</span>
                     <Badge variant="secondary">{device.percentage}%</Badge>
                   </div>
                 </div>
@@ -429,8 +429,8 @@ export default function AdminDashboard() {
                       <span className="font-medium">{location.country}</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium">${location.revenue.toFixed(2)}</div>
-                      <div className="text-xs text-muted-foreground">{location.users} users</div>
+                      <div className="text-sm font-medium">${(location.revenue || 0).toFixed(2)}</div>
+                      <div className="text-xs text-muted-foreground">{location.users || 0} users</div>
                     </div>
                   </div>
                   <Progress value={location.percentage} className="h-2" />
@@ -475,7 +475,7 @@ export default function AdminDashboard() {
                         {order.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium">${order.total.toFixed(2)}</TableCell>
+                    <TableCell className="font-medium">${(order.total || 0).toFixed(2)}</TableCell>
                     <TableCell>{format(new Date(order.createdAt), 'MMM d, yyyy')}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" asChild type="button">

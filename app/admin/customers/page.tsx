@@ -57,12 +57,16 @@ interface Customer {
   email: string
   phone?: string
   avatar?: string
-  status: 'active' | 'inactive' | 'banned'
+  status: 'active' | 'inactive'
   totalOrders: number
   totalSpent: number
   lastOrderDate?: string
   joinDate: string
   location?: string
+  loyaltyPoints: number
+  averageRating: number
+  totalReviews: number
+  lastLoginAt?: string
   tags: string[]
 }
 
@@ -73,92 +77,47 @@ export default function CustomersPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [showCustomerModal, setShowCustomerModal] = useState(false)
-
-  // Mock data
-  useEffect(() => {
-    const mockCustomers: Customer[] = [
-      {
-        id: '1',
-        name: 'John Mwangi',
-        email: 'john.mwangi@email.com',
-        phone: '+254 712 345 678',
-        avatar: '/placeholder-avatar.jpg',
-        status: 'active',
-        totalOrders: 12,
-        totalSpent: 45000,
-        lastOrderDate: '2024-01-15',
-        joinDate: '2023-06-15',
-        location: 'Nairobi, Kenya',
-        tags: ['VIP', 'Regular']
-      },
-      {
-        id: '2',
-        name: 'Sarah Wanjiku',
-        email: 'sarah.wanjiku@email.com',
-        phone: '+254 723 456 789',
-        status: 'active',
-        totalOrders: 8,
-        totalSpent: 32000,
-        lastOrderDate: '2024-01-10',
-        joinDate: '2023-08-20',
-        location: 'Mombasa, Kenya',
-        tags: ['Regular']
-      },
-      {
-        id: '3',
-        name: 'Peter Kimani',
-        email: 'peter.kimani@email.com',
-        phone: '+254 734 567 890',
-        status: 'inactive',
-        totalOrders: 3,
-        totalSpent: 15000,
-        lastOrderDate: '2023-12-05',
-        joinDate: '2023-10-10',
-        location: 'Kisumu, Kenya',
-        tags: ['New']
-      },
-      {
-        id: '4',
-        name: 'Grace Akinyi',
-        email: 'grace.akinyi@email.com',
-        phone: '+254 745 678 901',
-        status: 'active',
-        totalOrders: 15,
-        totalSpent: 68000,
-        lastOrderDate: '2024-01-18',
-        joinDate: '2023-05-12',
-        location: 'Nakuru, Kenya',
-        tags: ['VIP', 'Premium']
-      },
-      {
-        id: '5',
-        name: 'David Ochieng',
-        email: 'david.ochieng@email.com',
-        status: 'banned',
-        totalOrders: 2,
-        totalSpent: 8000,
-        lastOrderDate: '2023-11-20',
-        joinDate: '2023-09-15',
-        location: 'Eldoret, Kenya',
-        tags: ['Problematic']
-      }
-    ]
-
-    setTimeout(() => {
-      setCustomers(mockCustomers)
-      setLoading(false)
-    }, 1000)
-  }, [])
-
-  const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         customer.email.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || customer.status === statusFilter
-    return matchesSearch && matchesStatus
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 0
   })
 
+  // Fetch customers from API
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setLoading(true)
+        const params = new URLSearchParams({
+          page: pagination.page.toString(),
+          limit: pagination.limit.toString(),
+          ...(searchQuery && { search: searchQuery }),
+          ...(statusFilter !== 'all' && { status: statusFilter })
+        })
+
+        const response = await fetch(`/api/admin/customers?${params}`)
+        if (response.ok) {
+          const data = await response.json()
+          setCustomers(data.customers)
+          setPagination(data.pagination)
+        } else {
+          console.error('Failed to fetch customers')
+          toast.error('Failed to fetch customers')
+        }
+      } catch (error) {
+        console.error('Error fetching customers:', error)
+        toast.error('Error fetching customers')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCustomers()
+  }, [pagination.page, searchQuery, statusFilter])
+
   const stats = {
-    total: customers.length,
+    total: pagination.total,
     active: customers.filter(c => c.status === 'active').length,
     inactive: customers.filter(c => c.status === 'inactive').length,
     totalSpent: customers.reduce((sum, c) => sum + c.totalSpent, 0)
@@ -177,7 +136,6 @@ export default function CustomersPage() {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800'
       case 'inactive': return 'bg-yellow-100 text-yellow-800'
-      case 'banned': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -280,12 +238,13 @@ export default function CustomersPage() {
               <TableHead>Status</TableHead>
               <TableHead>Orders</TableHead>
               <TableHead>Total Spent</TableHead>
-              <TableHead>Last Order</TableHead>
+              <TableHead>Rating</TableHead>
+              <TableHead>Last Activity</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCustomers.map((customer) => (
+            {customers.map((customer) => (
               <TableRow key={customer.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -300,6 +259,15 @@ export default function CustomersPage() {
                       <div className="text-sm text-gray-500">
                         Joined {format(new Date(customer.joinDate), 'MMM yyyy')}
                       </div>
+                      {customer.tags.length > 0 && (
+                        <div className="flex gap-1 mt-1">
+                          {customer.tags.slice(0, 2).map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </TableCell>
@@ -308,6 +276,9 @@ export default function CustomersPage() {
                     <div className="text-sm">{customer.email}</div>
                     {customer.phone && (
                       <div className="text-sm text-gray-500">{customer.phone}</div>
+                    )}
+                    {customer.location && (
+                      <div className="text-sm text-gray-500">{customer.location}</div>
                     )}
                   </div>
                 </TableCell>
@@ -326,14 +297,34 @@ export default function CustomersPage() {
                   <div className="font-medium">
                     KSh {customer.totalSpent.toLocaleString()}
                   </div>
+                  {customer.loyaltyPoints > 0 && (
+                    <div className="text-xs text-gray-500">
+                      {customer.loyaltyPoints} pts
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {customer.averageRating > 0 ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-500">★</span>
+                      <span className="text-sm">{customer.averageRating}</span>
+                      <span className="text-xs text-gray-500">({customer.totalReviews})</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">No reviews</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   {customer.lastOrderDate ? (
                     <div className="text-sm">
-                      {format(new Date(customer.lastOrderDate), 'MMM dd, yyyy')}
+                      Order: {format(new Date(customer.lastOrderDate), 'MMM dd')}
+                    </div>
+                  ) : customer.lastLoginAt ? (
+                    <div className="text-sm">
+                      Login: {format(new Date(customer.lastLoginAt), 'MMM dd')}
                     </div>
                   ) : (
-                    <span className="text-gray-400">No orders</span>
+                    <span className="text-gray-400">No activity</span>
                   )}
                 </TableCell>
                 <TableCell>
@@ -347,9 +338,6 @@ export default function CustomersPage() {
                     </Button>
                     <Button variant="ghost" size="sm">
                       <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600">
-                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>
@@ -409,6 +397,13 @@ export default function CustomersPage() {
                       </div>
                     </div>
                   )}
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Loyalty Points</label>
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-gray-400" />
+                      <span>{selectedCustomer.loyaltyPoints} points</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -431,6 +426,16 @@ export default function CustomersPage() {
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-gray-400" />
                       <span>KSh {selectedCustomer.totalSpent.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Average Rating</label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-500">★</span>
+                      <span>{selectedCustomer.averageRating > 0 ? selectedCustomer.averageRating : 'No reviews'}</span>
+                      {selectedCustomer.totalReviews > 0 && (
+                        <span className="text-sm text-gray-500">({selectedCustomer.totalReviews} reviews)</span>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -9,21 +9,30 @@ const isPublicRoute = createRouteMatcher([
   '/blog(.*)',
   '/about',
   '/contact',
+  '/cart(.*)', // Public cart page
+  '/checkout(.*)', // Public checkout page
+  '/wishlist(.*)', // Public wishlist page
   '/api/webhooks(.*)',
+  '/api/categories(.*)', // Public categories API
+  '/api/products(.*)', // Public products API
+  '/api/artisans(.*)', // Public artisans API
+  '/api/testimonials(.*)', // Public testimonials API
+  '/api/wishlist(.*)', // Public wishlist API
+  '/api/social(.*)', // Public social API
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/admin(.*)', // Allow admin routes to handle their own auth
   '/api/admin(.*)', // Allow admin API routes to handle their own auth
 ])
 
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
   // Allow public routes (including admin routes)
   if (isPublicRoute(req)) {
     return NextResponse.next()
   }
 
   // For protected routes, check Clerk authentication
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) {
     return Response.redirect(new URL('/sign-in', req.url))
   }
