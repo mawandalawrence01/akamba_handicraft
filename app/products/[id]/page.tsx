@@ -17,71 +17,47 @@ import { Footer } from '@/components/layout/footer'
 import { SocialShare } from '@/components/social/social-share'
 import { LikeButton } from '@/components/social/like-button'
 
-// Mock product data - replace with actual API call
-const getProduct = (id: string) => {
-  return {
-    id,
-    name: 'Traditional Elephant Carving',
-    price: 89.99,
-    originalPrice: 120.00,
-    description: 'This magnificent elephant carving represents strength, wisdom, and good fortune in African culture. Hand-carved from premium ebony wood by master artisan John Mwangi, this piece showcases the incredible skill and artistry of the Akamba people.',
-    longDescription: `This extraordinary elephant sculpture is a testament to the rich cultural heritage and exceptional craftsmanship of the Akamba people. Each piece is meticulously hand-carved from sustainably sourced ebony wood, chosen for its durability and beautiful dark grain.
-
-    The carving process takes several weeks to complete, with our master artisan paying careful attention to every detail - from the gentle curve of the trunk to the intricate texture of the skin. The elephant's pose captures a moment of serene majesty, making it a perfect centerpiece for any home or office.
-
-    Beyond its aesthetic appeal, this sculpture carries deep cultural significance. In African tradition, elephants symbolize wisdom, strength, and good fortune. Many believe that having an elephant sculpture in the home brings prosperity and protection to the family.`,
-    images: [
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=600&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1589571894960-20bbe2828d0a?q=80&w=600&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=600&auto=format&fit=crop',
-    ],
-    rating: 4.8,
-    reviewCount: 24,
-    likeCount: 47,
-    category: 'Sculptures',
-    artisan: {
-      name: 'John Mwangi',
-      experience: '15 years',
-      location: 'Machakos, Kenya',
-      bio: 'Master carver specializing in wildlife sculptures',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop'
-    },
-    materials: ['Premium Ebony Wood', 'Natural Finish'],
-    dimensions: {
-      height: '25cm',
-      width: '30cm',
-      depth: '15cm',
-      weight: '2.5kg'
-    },
-    inStock: true,
-    stockQuantity: 5,
-    shipping: {
-      local: 'Free shipping within Kenya',
-      international: 'Ships worldwide - calculated at checkout'
-    },
-    features: [
-      'Hand-carved by master artisan',
-      'Premium ebony wood',
-      'Natural wood finish',
-      'Cultural authenticity certificate',
-      'Sustainable sourcing'
-    ]
+// Fetch product data from API
+const fetchProduct = async (id: string) => {
+  try {
+    const response = await fetch(`/api/products/${id}`)
+    if (!response.ok) {
+      throw new Error('Product not found')
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching product:', error)
+    throw error
   }
 }
 
 export default function ProductPage() {
   const params = useParams()
   const [product, setProduct] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const { addItem } = useCartStore()
 
   useEffect(() => {
-    if (params.id) {
-      const productData = getProduct(params.id as string)
-      setProduct(productData)
+    const loadProduct = async () => {
+      if (params.id) {
+        try {
+          setLoading(true)
+          setError(null)
+          const productData = await fetchProduct(params.id as string)
+          setProduct(productData)
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to load product')
+        } finally {
+          setLoading(false)
+        }
+      }
     }
+
+    loadProduct()
   }, [params.id])
 
   const handleAddToCart = () => {
@@ -92,7 +68,7 @@ export default function ProductPage() {
       productId: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0],
+      image: product.images[0]?.url || '/placeholder-product.jpg',
     })
     
     toast.success('Added to cart!')
@@ -105,10 +81,47 @@ export default function ProductPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Link href="/products">
+            <Button className="bg-amber-600 hover:bg-amber-700">
+              Browse All Products
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-amber-600"></div>
+        <div className="text-center">
+          <div className="text-gray-500 text-6xl mb-4">📦</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Product Data</h1>
+          <p className="text-gray-600 mb-6">Unable to load product information</p>
+          <Link href="/products">
+            <Button className="bg-amber-600 hover:bg-amber-700">
+              Browse All Products
+            </Button>
+          </Link>
+        </div>
       </div>
     )
   }
@@ -124,8 +137,8 @@ export default function ProductPage() {
           <span>/</span>
           <Link href="/products" className="hover:text-amber-600">Products</Link>
           <span>/</span>
-          <Link href={`/categories/${product.category.toLowerCase()}`} className="hover:text-amber-600">
-            {product.category}
+          <Link href={`/categories/${product.category?.slug || product.category?.name?.toLowerCase()}`} className="hover:text-amber-600">
+            {product.category?.name || 'Category'}
           </Link>
           <span>/</span>
           <span className="text-gray-900">{product.name}</span>
@@ -140,24 +153,24 @@ export default function ProductPage() {
               className="aspect-square rounded-2xl overflow-hidden bg-white shadow-lg"
             >
               <img
-                src={product.images[selectedImage]}
-                alt={product.name}
+                src={product.images[selectedImage]?.url || '/placeholder-product.jpg'}
+                alt={product.images[selectedImage]?.altText || product.name}
                 className="w-full h-full object-cover"
               />
             </motion.div>
             
             <div className="grid grid-cols-3 gap-4">
-              {product.images.map((image: string, index: number) => (
+              {product.images.map((image: any, index: number) => (
                 <button
-                  key={index}
+                  key={image.id || index}
                   onClick={() => setSelectedImage(index)}
                   className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
                     selectedImage === index ? 'border-amber-500' : 'border-gray-200'
                   }`}
                 >
                   <img
-                    src={image}
-                    alt={`${product.name} view ${index + 1}`}
+                    src={image.url || '/placeholder-product.jpg'}
+                    alt={image.altText || `${product.name} view ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -169,7 +182,7 @@ export default function ProductPage() {
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline">{product.category}</Badge>
+                <Badge variant="outline">{product.category?.name || 'Product'}</Badge>
                 {product.originalPrice && (
                   <Badge variant="destructive">
                     {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
@@ -262,7 +275,7 @@ export default function ProductPage() {
                   url={typeof window !== 'undefined' ? window.location.href : ''}
                   title={product.name}
                   description={product.description}
-                  imageUrl={product.images[0]}
+                  imageUrl={product.images[0]?.url || '/placeholder-product.jpg'}
                   productId={product.id}
                   variant="compact"
                   showLabel={false}
@@ -318,19 +331,25 @@ export default function ProductPage() {
               </TabsContent>
               
               <TabsContent value="artisan" className="mt-6">
-                <div className="flex items-start gap-6">
-                  <img
-                    src={product.artisan.image}
-                    alt={product.artisan.name}
-                    className="w-24 h-24 rounded-full object-cover"
-                  />
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2">{product.artisan.name}</h3>
-                    <p className="text-gray-600 mb-1">{product.artisan.experience} experience</p>
-                    <p className="text-gray-600 mb-4">{product.artisan.location}</p>
-                    <p className="text-gray-700">{product.artisan.bio}</p>
+                {product.artisan ? (
+                  <div className="flex items-start gap-6">
+                    <img
+                      src={product.artisan.image || '/placeholder-artisan.jpg'}
+                      alt={product.artisan.name}
+                      className="w-24 h-24 rounded-full object-cover"
+                    />
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">{product.artisan.name}</h3>
+                      <p className="text-gray-600 mb-1">{product.artisan.experience || 'Experienced'} artisan</p>
+                      <p className="text-gray-600 mb-4">{product.artisan.location || 'Kenya'}</p>
+                      <p className="text-gray-700">{product.artisan.bio || 'Skilled artisan creating beautiful handcrafted pieces.'}</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">Artisan information not available</p>
+                  </div>
+                )}
               </TabsContent>
               
               <TabsContent value="specifications" className="mt-6">
@@ -338,32 +357,36 @@ export default function ProductPage() {
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Dimensions</h3>
                     <dl className="space-y-2">
-                      <div className="flex justify-between">
-                        <dt className="text-gray-600">Height:</dt>
-                        <dd className="font-medium">{product.dimensions.height}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-gray-600">Width:</dt>
-                        <dd className="font-medium">{product.dimensions.width}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-gray-600">Depth:</dt>
-                        <dd className="font-medium">{product.dimensions.depth}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-gray-600">Weight:</dt>
-                        <dd className="font-medium">{product.dimensions.weight}</dd>
-                      </div>
+                      {product.dimensions ? (
+                        Object.entries(product.dimensions).map(([key, value]) => (
+                          <div key={key} className="flex justify-between">
+                            <dt className="text-gray-600 capitalize">{key}:</dt>
+                            <dd className="font-medium">{value as string}</dd>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-600">Dimensions not specified</p>
+                      )}
+                      {product.weight && (
+                        <div className="flex justify-between">
+                          <dt className="text-gray-600">Weight:</dt>
+                          <dd className="font-medium">{product.weight}g</dd>
+                        </div>
+                      )}
                     </dl>
                   </div>
                   
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Materials</h3>
-                    <ul className="space-y-2">
-                      {product.materials.map((material: string, index: number) => (
-                        <li key={index} className="text-gray-700">• {material}</li>
-                      ))}
-                    </ul>
+                    {product.materials && product.materials.length > 0 ? (
+                      <ul className="space-y-2">
+                        {product.materials.map((material: string, index: number) => (
+                          <li key={index} className="text-gray-700">• {material}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-600">Materials not specified</p>
+                    )}
                   </div>
                 </div>
               </TabsContent>
@@ -401,8 +424,8 @@ export default function ProductPage() {
             <SocialShare
               url={typeof window !== 'undefined' ? window.location.href : ''}
               title={product.name}
-              description={`Discover this beautiful ${product.category.toLowerCase()} handcrafted by ${product.artisan.name}. ${product.description}`}
-              imageUrl={product.images[0]}
+              description={`Discover this beautiful ${product.category?.name?.toLowerCase() || 'product'} handcrafted by ${product.artisan?.name || 'skilled artisans'}. ${product.description}`}
+              imageUrl={product.images[0]?.url || '/placeholder-product.jpg'}
               productId={product.id}
               variant="default"
               showLabel={true}
@@ -424,7 +447,7 @@ export default function ProductPage() {
           url={typeof window !== 'undefined' ? window.location.href : ''}
           title={product.name}
           description={product.description}
-          imageUrl={product.images[0]}
+          imageUrl={product.images[0]?.url || '/placeholder-product.jpg'}
           productId={product.id}
           variant="floating"
         />
