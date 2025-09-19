@@ -210,17 +210,43 @@ export function Header() {
               <div className="relative group">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white font-medium text-sm">
-                    {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || 'U'}
+                  {/* User Avatar */}
+                  <div className="relative">
+                    {session?.user?.image ? (
+                      <img
+                        src={session.user.image}
+                        alt={session?.user?.name || 'User'}
+                        className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          // Fallback to initials if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = target.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className={`w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white font-medium text-sm ${session?.user?.image ? 'hidden' : 'flex'}`}
+                    >
+                      {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || 'U'}
+                    </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                    className="text-xs text-gray-600 hover:text-amber-600"
-                  >
-                    Sign Out
-                  </Button>
+                  
+                  {/* User Name and Sign Out */}
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium text-gray-700 hidden sm:block">
+                      {session?.user?.name || 'User'}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      className="text-xs text-gray-600 hover:text-amber-600 p-0 h-auto"
+                    >
+                      Sign Out
+                    </Button>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -286,6 +312,59 @@ export function Header() {
                       </Link>
                     </motion.div>
                   ))}
+
+                  {/* Mobile User Profile */}
+                  {isSignedIn && (
+                    <div className="pt-4 border-t border-amber-200">
+                      <div className="flex items-center space-x-3 p-3 bg-white/50 rounded-lg">
+                        {/* User Avatar */}
+                        <div className="relative">
+                          {session?.user?.image ? (
+                            <img
+                              src={session.user.image}
+                              alt={session?.user?.name || 'User'}
+                              className="w-10 h-10 rounded-full border-2 border-white shadow-md"
+                              onError={(e) => {
+                                // Fallback to initials if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const fallback = target.nextElementSibling as HTMLElement;
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div 
+                            className={`w-10 h-10 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white font-medium ${session?.user?.image ? 'hidden' : 'flex'}`}
+                          >
+                            {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || 'U'}
+                          </div>
+                        </div>
+                        
+                        {/* User Info */}
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900 text-sm">
+                            {session?.user?.name || 'User'}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {session?.user?.email}
+                          </p>
+                        </div>
+                        
+                        {/* Sign Out Button */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            signOut({ callbackUrl: '/' })
+                            setIsOpen(false)
+                          }}
+                          className="text-xs text-gray-600 hover:text-amber-600"
+                        >
+                          Sign Out
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Mobile Search */}
                   <div className="pt-4 border-t border-amber-200">
