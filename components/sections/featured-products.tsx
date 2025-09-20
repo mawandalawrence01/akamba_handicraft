@@ -20,6 +20,12 @@ interface Product {
   originalPrice?: number
   image?: string
   imageAlt?: string
+  images?: Array<{
+    id: string
+    url: string
+    isPrimary: boolean
+    altText?: string
+  }>
   rating: number
   reviews: number
   artisan?: {
@@ -53,7 +59,7 @@ export function FeaturedProducts() {
           const transformedProducts = data.products.map((product: Product) => ({
             ...product,
             originalPrice: undefined,
-            image: product.image || '/placeholder-product.svg',
+            image: product.images && product.images.length > 0 ? product.images[0].url : '/placeholder-product.svg',
             imageAlt: product.name,
             rating: 4.5, // Default rating since it's not in the API response
             reviews: 0,
