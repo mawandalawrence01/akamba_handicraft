@@ -41,7 +41,9 @@ import {
 import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
+import { CldImage } from 'next-cloudinary'
 import { AdminPageLayout, AdminCard } from '@/components/admin/admin-page-layout'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface ProductImage {
   id: string
@@ -107,6 +109,19 @@ export default function EditProductPage() {
   const [loadingProduct, setLoadingProduct] = useState(true)
   const [previewMode, setPreviewMode] = useState(false)
   const [product, setProduct] = useState<Product | null>(null)
+
+  // Helper function to check if image is from Cloudinary
+  const isCloudinaryImage = (url: string) => {
+    return url && (url.includes('cloudinary.com') || url.includes('res.cloudinary.com'))
+  }
+
+  // Helper function to get Cloudinary public ID from URL
+  const getCloudinaryPublicId = (url: string) => {
+    if (!isCloudinaryImage(url)) return null
+    const parts = url.split('/')
+    const filename = parts[parts.length - 1]
+    return filename.split('.')[0] // Remove file extension
+  }
 
   // Helper function to ensure image URLs are properly formatted
   const getImageUrl = (url: string) => {
@@ -993,12 +1008,14 @@ export default function EditProductPage() {
                       {images.map((image, index) => (
                         <div key={image.id} className="relative group border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
                           <div className="aspect-square relative">
-                            <Image
-                              src={getImageUrl(image.url) || image.url}
+                            <OptimizedImage
+                              src={image.url}
                               alt={image.altText}
                               fill
                               className="object-cover"
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              quality="auto"
+                              format="auto"
                               onError={(e) => {
                                 console.error('Image failed to load:', image.url)
                                 e.currentTarget.style.display = 'none'

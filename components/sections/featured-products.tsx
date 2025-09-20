@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useCartStore } from '@/lib/stores/cart-store'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface Product {
   id: string
@@ -158,12 +159,14 @@ export function FeaturedProducts() {
                   <div className="relative aspect-square overflow-hidden">
                     {/* Product Image */}
                     {product.image && getImageUrl(product.image) ? (
-                      <Image
+                      <OptimizedImage
                         src={getImageUrl(product.image)!}
                         alt={product.imageAlt || product.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                        quality="auto"
+                        format="auto"
                         onError={(e) => {
                           console.error('Image failed to load:', product.image)
                           e.currentTarget.style.display = 'none'

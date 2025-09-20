@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { toast } from 'react-hot-toast'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface Artisan {
   id: string
@@ -333,12 +334,14 @@ export default function ArtisanDetailPage() {
                           >
                             <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
                               {work.image && getImageUrl(work.image) ? (
-                                <Image
+                                <OptimizedImage
                                   src={getImageUrl(work.image)!}
                                   alt={work.imageAlt || work.name}
                                   width={300}
                                   height={300}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  quality="auto"
+                                  format="auto"
                                   onError={(e) => {
                                     e.currentTarget.style.display = 'none'
                                   }}

@@ -13,7 +13,7 @@ model User {
   email         String   @unique
   emailVerified DateTime?
   name          String?
-  image         String?
+  image         String?  // Can be Cloudinary URL or local URL
   firstName     String?
   lastName      String?
   phone         String?
@@ -29,6 +29,15 @@ model User {
   lastLoginAt   DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  // Cloudinary-specific fields for user profile images
+  cloudinaryId    String? // Public ID from Cloudinary
+  cloudinaryUrl   String? // Full Cloudinary URL
+  imageWidth      Int?    // Image width from Cloudinary
+  imageHeight     Int?    // Image height from Cloudinary
+  imageFormat     String? // Image format (jpg, png, webp, etc.)
+  imageFileSize   Int?    // File size in bytes
+  isCloudinary    Boolean @default(false) // Flag to identify Cloudinary images
 
   // NextAuth relations
   accounts Account[]
@@ -73,12 +82,21 @@ model Category {
   name        String   @unique
   slug        String   @unique
   description String?
-  image       String?
+  image       String?  // Can be Cloudinary URL or local URL
   parentId    String?
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Cloudinary-specific fields for category images
+  cloudinaryId    String? // Public ID from Cloudinary
+  cloudinaryUrl   String? // Full Cloudinary URL
+  imageWidth      Int?    // Image width from Cloudinary
+  imageHeight     Int?    // Image height from Cloudinary
+  imageFormat     String? // Image format (jpg, png, webp, etc.)
+  imageFileSize   Int?    // File size in bytes
+  isCloudinary    Boolean @default(false) // Flag to identify Cloudinary images
 
   // Relations
   parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
@@ -94,7 +112,7 @@ model Artisan {
   name        String
   slug        String   @unique
   bio         String?
-  image       String?
+  image       String?  // Can be Cloudinary URL or local URL
   phone       String?
   location    String?
   experience  Int? // years of experience
@@ -103,6 +121,15 @@ model Artisan {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Cloudinary-specific fields for artisan images
+  cloudinaryId    String? // Public ID from Cloudinary
+  cloudinaryUrl   String? // Full Cloudinary URL
+  imageWidth      Int?    // Image width from Cloudinary
+  imageHeight     Int?    // Image height from Cloudinary
+  imageFormat     String? // Image format (jpg, png, webp, etc.)
+  imageFileSize   Int?    // File size in bytes
+  isCloudinary    Boolean @default(false) // Flag to identify Cloudinary images
 
   // Relations
   products Product[]
@@ -164,12 +191,21 @@ model Product {
 // Product images
 model ProductImage {
   id        String   @id @default(cuid())
-  url       String
+  url       String   // Can be Cloudinary URL or local URL
   altText   String?
   sortOrder Int      @default(0)
   is360View Boolean  @default(false)
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  // Cloudinary-specific fields
+  cloudinaryId    String? // Public ID from Cloudinary
+  cloudinaryUrl   String? // Full Cloudinary URL
+  width           Int?    // Image width from Cloudinary
+  height          Int?    // Image height from Cloudinary
+  format          String? // Image format (jpg, png, webp, etc.)
+  fileSize        Int?    // File size in bytes
+  isCloudinary    Boolean @default(false) // Flag to identify Cloudinary images
 
   productId   String
   mediaFileId String?
@@ -458,13 +494,22 @@ model BlogPost {
   slug        String   @unique
   excerpt     String?
   content     String
-  featuredImage String?
+  featuredImage String? // Can be Cloudinary URL or local URL
   tags        String[]
   isPublished Boolean  @default(false)
   publishedAt DateTime?
   viewCount   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Cloudinary-specific fields for featured images
+  cloudinaryId    String? // Public ID from Cloudinary
+  cloudinaryUrl   String? // Full Cloudinary URL
+  imageWidth      Int?    // Image width from Cloudinary
+  imageHeight     Int?    // Image height from Cloudinary
+  imageFormat     String? // Image format (jpg, png, webp, etc.)
+  imageFileSize   Int?    // File size in bytes
+  isCloudinary    Boolean @default(false) // Flag to identify Cloudinary images
 
   @@map("blog_posts")
 }

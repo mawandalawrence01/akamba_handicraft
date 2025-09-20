@@ -46,7 +46,14 @@ export async function GET(request: NextRequest) {
             id: true,
             url: true,
             altText: true,
-            isPrimary: true
+            isPrimary: true,
+            cloudinaryId: true,
+            cloudinaryUrl: true,
+            width: true,
+            height: true,
+            format: true,
+            fileSize: true,
+            isCloudinary: true
           },
           take: 1
         },
@@ -92,12 +99,26 @@ export async function GET(request: NextRequest) {
         id: img.id,
         url: img.url,
         isPrimary: img.isPrimary,
-        altText: img.altText
+        altText: img.altText,
+        cloudinaryId: img.cloudinaryId,
+        cloudinaryUrl: img.cloudinaryUrl,
+        width: img.width,
+        height: img.height,
+        format: img.format,
+        fileSize: img.fileSize,
+        isCloudinary: img.isCloudinary
       })) : [{
         id: 'no-image',
         url: '/placeholder-product.jpg',
         isPrimary: true,
-        altText: product.name
+        altText: product.name,
+        cloudinaryId: null,
+        cloudinaryUrl: null,
+        width: null,
+        height: null,
+        format: null,
+        fileSize: null,
+        isCloudinary: false
       }]
     }))
 

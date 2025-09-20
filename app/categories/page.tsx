@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface Category {
   id: string
@@ -213,12 +214,14 @@ export default function CategoriesPage() {
                   <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-sm h-full">
                     <div className="relative aspect-[4/3] overflow-hidden">
                       {category.image && getImageUrl(category.image) ? (
-                        <Image
+                        <OptimizedImage
                           src={getImageUrl(category.image)!}
                           alt={category.name}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          quality="auto"
+                          format="auto"
                           onError={(e) => {
                             console.error('Image failed to load:', category.image)
                             e.currentTarget.style.display = 'none'

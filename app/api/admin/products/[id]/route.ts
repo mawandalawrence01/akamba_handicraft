@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin, logAdminActivity } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
+import { deleteProductCloudinaryImages } from '@/lib/cloudinary-helpers'
 
 interface RouteParams {
   params: Promise<{
@@ -109,7 +110,15 @@ export async function PATCH(
               altText: img.altText,
               sortOrder: img.sortOrder,
               isPrimary: img.isPrimary,
-              is360View: img.is360View
+              is360View: img.is360View,
+              // Cloudinary metadata
+              cloudinaryId: img.cloudinaryId || null,
+              cloudinaryUrl: img.cloudinaryUrl || null,
+              width: img.width || null,
+              height: img.height || null,
+              format: img.format || null,
+              fileSize: img.fileSize || null,
+              isCloudinary: img.isCloudinary || false
             }))
           })
         }
@@ -207,6 +216,14 @@ export async function DELETE(
         { error: 'Cannot delete product with existing orders. Consider deactivating instead.' },
         { status: 400 }
       )
+    }
+
+    // Delete Cloudinary images before deleting the product
+    try {
+      await deleteProductCloudinaryImages(productId)
+    } catch (error) {
+      console.error('Error deleting Cloudinary images:', error)
+      // Continue with product deletion even if Cloudinary cleanup fails
     }
 
     // Delete product and all related data

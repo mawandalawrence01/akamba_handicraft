@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, Folder } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface Category {
   id: string
@@ -121,12 +122,14 @@ export function Categories() {
                 <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md">
                   <div className="relative h-80 overflow-hidden">
                     {category.image && getImageUrl(category.image) ? (
-                      <Image
+                      <OptimizedImage
                         src={getImageUrl(category.image)!}
                         alt={category.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, 50vw"
+                        quality="auto"
+                        format="auto"
                         onError={(e) => {
                           console.error('Image failed to load:', category.image)
                           e.currentTarget.style.display = 'none'
@@ -176,12 +179,14 @@ export function Categories() {
                   <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-sm">
                     <div className="relative aspect-square overflow-hidden">
                       {category.image && getImageUrl(category.image) ? (
-                        <Image
+                        <OptimizedImage
                           src={getImageUrl(category.image)!}
                           alt={category.name}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                           sizes="(max-width: 768px) 50vw, 25vw"
+                          quality="auto"
+                          format="auto"
                           onError={(e) => {
                             console.error('Image failed to load:', category.image)
                             e.currentTarget.style.display = 'none'

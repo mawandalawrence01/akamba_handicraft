@@ -16,6 +16,7 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { SocialShare } from '@/components/social/social-share'
 import { LikeButton } from '@/components/social/like-button'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 // Fetch product data from API
 const fetchProduct = async (id: string) => {
@@ -152,10 +153,14 @@ export default function ProductPage() {
               animate={{ opacity: 1 }}
               className="aspect-square rounded-2xl overflow-hidden bg-white shadow-lg"
             >
-              <img
+              <OptimizedImage
                 src={product.images[selectedImage]?.url || '/placeholder-product.jpg'}
                 alt={product.images[selectedImage]?.altText || product.name}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                quality="auto"
+                format="auto"
               />
             </motion.div>
             
@@ -168,10 +173,14 @@ export default function ProductPage() {
                     selectedImage === index ? 'border-amber-500' : 'border-gray-200'
                   }`}
                 >
-                  <img
+                  <OptimizedImage
                     src={image.url || '/placeholder-product.jpg'}
                     alt={image.altText || `${product.name} view ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 33vw, 16vw"
+                    quality="auto"
+                    format="auto"
                   />
                 </button>
               ))}

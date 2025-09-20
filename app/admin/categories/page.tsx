@@ -52,6 +52,7 @@ import {
 } from '@/components/ui/dialog'
 import { AdminPageLayout } from '@/components/admin/admin-page-layout'
 import { toast } from 'react-hot-toast'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface Category {
   id: string
@@ -533,12 +534,14 @@ export default function AdminCategoriesPage() {
                           <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md">
                             <div className="relative aspect-square overflow-hidden">
                               {category.image && getImageUrl(category.image) ? (
-                                <Image
+                                <OptimizedImage
                                   src={getImageUrl(category.image)!}
                                   alt={category.name}
                                   fill
                                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                  quality="auto"
+                                  format="auto"
                                   onError={(e) => {
                                     console.error('Image failed to load:', category.image)
                                     e.currentTarget.style.display = 'none'
@@ -630,12 +633,14 @@ export default function AdminCategoriesPage() {
                               <div className="flex gap-6">
                                 <div className="w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                                   {category.image && getImageUrl(category.image) ? (
-                                    <Image
+                                    <OptimizedImage
                                       src={getImageUrl(category.image)!}
                                       alt={category.name}
                                       width={128}
                                       height={128}
                                       className="w-full h-full object-cover"
+                                      quality="auto"
+                                      format="auto"
                                       onError={(e) => {
                                         console.error('Image failed to load:', category.image)
                                         e.currentTarget.style.display = 'none'

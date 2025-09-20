@@ -35,6 +35,7 @@ import { SocialShare } from '@/components/social/social-share'
 import { LikeButton } from '@/components/social/like-button'
 import { useCartStore } from '@/lib/stores/cart-store'
 import { toast } from 'react-hot-toast'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface WishlistItem {
   id: string
@@ -411,11 +412,13 @@ export default function WishlistPage() {
                           />
                           
                           <Link href={`/products/${item.product.slug}`}>
-                            <Image
+                            <OptimizedImage
                               src={item.product.images[0]?.url || '/placeholder.jpg'}
                               alt={item.product.name}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              quality="auto"
+                              format="auto"
                             />
                           </Link>
                           
@@ -505,11 +508,13 @@ export default function WishlistPage() {
                           
                           <div className="relative w-20 h-20 rounded-lg overflow-hidden">
                             <Link href={`/products/${item.product.slug}`}>
-                              <Image
+                              <OptimizedImage
                                 src={item.product.images[0]?.url || '/placeholder.jpg'}
                                 alt={item.product.name}
                                 fill
                                 className="object-cover"
+                                quality="auto"
+                                format="auto"
                               />
                             </Link>
                           </div>

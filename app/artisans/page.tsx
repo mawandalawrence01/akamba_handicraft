@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface Artisan {
   id: string
@@ -211,12 +212,14 @@ export default function ArtisansPage() {
                             {(artisan.recentWork || []).map((work, idx) => (
                               <div key={work.id} className="aspect-square rounded-lg overflow-hidden">
                                 {work.image && getImageUrl(work.image) ? (
-                                  <Image
+                                  <OptimizedImage
                                     src={getImageUrl(work.image)!}
                                     alt={work.imageAlt || work.name}
                                     width={100}
                                     height={100}
                                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                    quality="auto"
+                                    format="auto"
                                     onError={(e) => {
                                       console.error('Recent work image failed to load:', work.image)
                                       e.currentTarget.style.display = 'none'
@@ -384,12 +387,14 @@ export default function ArtisansPage() {
                         {(artisan.recentWork || []).slice(0, 3).map((work, idx) => (
                           <div key={work.id} className="aspect-square rounded overflow-hidden">
                             {work.image && getImageUrl(work.image) ? (
-                              <Image
+                              <OptimizedImage
                                 src={getImageUrl(work.image)!}
                                 alt={work.imageAlt || work.name}
                                 width={80}
                                 height={80}
                                 className="w-full h-full object-cover"
+                                quality="auto"
+                                format="auto"
                                 onError={(e) => {
                                   console.error('Recent work image failed to load:', work.image)
                                   e.currentTarget.style.display = 'none'

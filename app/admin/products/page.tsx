@@ -44,6 +44,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Separator } from '@/components/ui/separator'
 import { AdminPageLayout } from '@/components/admin/admin-page-layout'
 import { toast } from 'react-hot-toast'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface Product {
   id: string
@@ -443,12 +444,14 @@ export default function AdminProductsPage() {
                             <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md">
                               <div className="relative aspect-square overflow-hidden">
                                 {primaryImage && getImageUrl(primaryImage.url) ? (
-                                <Image
+                                <OptimizedImage
                                     src={getImageUrl(primaryImage.url)!}
                                     alt={primaryImage.altText || product.name}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    quality="auto"
+                                    format="auto"
                                     onError={(e) => {
                                       console.error('Image failed to load:', primaryImage.url)
                                       e.currentTarget.style.display = 'none'
@@ -567,12 +570,14 @@ export default function AdminProductsPage() {
                                 <div className="flex gap-6">
                                   <div className="w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                                     {primaryImage && getImageUrl(primaryImage.url) ? (
-                                      <Image
+                                      <OptimizedImage
                                         src={getImageUrl(primaryImage.url)!}
                                         alt={primaryImage.altText || product.name}
                                         width={128}
                                         height={128}
                                         className="w-full h-full object-cover"
+                                        quality="auto"
+                                        format="auto"
                                         onError={(e) => {
                                           console.error('Image failed to load:', primaryImage.url)
                                           e.currentTarget.style.display = 'none'

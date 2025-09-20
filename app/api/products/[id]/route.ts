@@ -78,7 +78,14 @@ export async function GET(
             altText: true,
             sortOrder: true,
             is360View: true,
-            isPrimary: true
+            isPrimary: true,
+            cloudinaryId: true,
+            cloudinaryUrl: true,
+            width: true,
+            height: true,
+            format: true,
+            fileSize: true,
+            isCloudinary: true
           },
           orderBy: {
             sortOrder: 'asc'
@@ -197,14 +204,28 @@ export async function GET(
         altText: img.altText,
         sortOrder: img.sortOrder,
         is360View: img.is360View,
-        isPrimary: img.isPrimary
+        isPrimary: img.isPrimary,
+        cloudinaryId: img.cloudinaryId,
+        cloudinaryUrl: img.cloudinaryUrl,
+        width: img.width,
+        height: img.height,
+        format: img.format,
+        fileSize: img.fileSize,
+        isCloudinary: img.isCloudinary
       })) : [{
         id: 'no-image',
         url: '/placeholder-product.jpg',
         altText: product.name,
         sortOrder: 0,
         is360View: false,
-        isPrimary: true
+        isPrimary: true,
+        cloudinaryId: null,
+        cloudinaryUrl: null,
+        width: null,
+        height: null,
+        format: null,
+        fileSize: null,
+        isCloudinary: false
       }],
       videos: product.videos.map(video => ({
         id: video.id,

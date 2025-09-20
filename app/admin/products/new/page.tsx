@@ -42,6 +42,7 @@ import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import axios from 'axios'
 import { AdminPageLayout, AdminCard } from '@/components/admin/admin-page-layout'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface ProductImage {
   id: string
@@ -598,12 +599,14 @@ export default function AddProductPage() {
                   <div className="mt-4 space-y-2">
                     {images.map((image, index) => (
                       <div key={image.id} className="flex items-center gap-2 p-2 border rounded">
-                        <Image 
+                        <OptimizedImage 
                           src={getImageUrl(image.url) || image.url} 
                           alt={image.altText} 
                           width={48} 
                           height={48} 
                           className="object-cover rounded" 
+                          quality="auto"
+                          format="auto"
                         />
                         <div className="flex-1">
                           <p className="text-sm font-medium">{image.altText}</p>

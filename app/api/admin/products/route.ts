@@ -197,7 +197,15 @@ export async function POST(request: NextRequest) {
             altText: img.altText || name,
             sortOrder: index,
             isPrimary: index === 0,
-            is360View: img.is360View || false
+            is360View: img.is360View || false,
+            // Cloudinary metadata
+            cloudinaryId: img.cloudinaryId || null,
+            cloudinaryUrl: img.cloudinaryUrl || null,
+            width: img.width || null,
+            height: img.height || null,
+            format: img.format || null,
+            fileSize: img.fileSize || null,
+            isCloudinary: img.isCloudinary || false
           })) || []
         },
         videos: {

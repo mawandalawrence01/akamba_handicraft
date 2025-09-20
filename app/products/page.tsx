@@ -16,6 +16,7 @@ import { useCartStore } from '@/lib/stores/cart-store'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { toast } from 'react-hot-toast'
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 interface Product {
   id: string
@@ -503,12 +504,14 @@ export default function ProductsPage() {
                         <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md">
                           <div className="relative aspect-square overflow-hidden">
                             {primaryImage ? (
-                              <Image
+                              <OptimizedImage
                                 src={primaryImage.url}
                                 alt={primaryImage.altText || product.name}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                quality="auto"
+                                format="auto"
                               />
                             ) : (
                               <div className="w-full h-full bg-gray-100 flex items-center justify-center">
@@ -606,12 +609,14 @@ export default function ProductsPage() {
                           <div className="flex gap-6">
                             <div className="w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                               {primaryImage ? (
-                                <Image
+                                <OptimizedImage
                                   src={primaryImage.url}
                                   alt={primaryImage.altText || product.name}
                                   width={128}
                                   height={128}
                                   className="w-full h-full object-cover"
+                                  quality="auto"
+                                  format="auto"
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center">
