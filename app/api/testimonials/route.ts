@@ -29,7 +29,14 @@ export async function GET(request: NextRequest) {
             lastName: true,
             image: true,
             city: true,
-            country: true
+            country: true,
+            cloudinaryId: true,
+            cloudinaryUrl: true,
+            imageWidth: true,
+            imageHeight: true,
+            imageFormat: true,
+            imageFileSize: true,
+            isCloudinary: true
           }
         },
         product: {
@@ -38,7 +45,17 @@ export async function GET(request: NextRequest) {
             name: true,
             images: {
               where: { isPrimary: true },
-              select: { url: true, altText: true },
+              select: { 
+                url: true, 
+                altText: true,
+                cloudinaryId: true,
+                cloudinaryUrl: true,
+                width: true,
+                height: true,
+                format: true,
+                fileSize: true,
+                isCloudinary: true
+              },
               take: 1
             }
           }
@@ -59,9 +76,13 @@ export async function GET(request: NextRequest) {
       rating: review.rating,
       content: review.content,
       title: review.title,
-      avatar: review.user.image,
+      avatar: review.user.isCloudinary && review.user.cloudinaryUrl ? review.user.cloudinaryUrl : review.user.image,
       productName: review.product.name,
-      productImage: review.product.images[0]?.url,
+      productImage: review.product.images[0] ? 
+        (review.product.images[0].isCloudinary && review.product.images[0].cloudinaryUrl ? 
+          review.product.images[0].cloudinaryUrl : 
+          review.product.images[0].url) : 
+        null,
       date: review.createdAt,
       verified: true
     }))

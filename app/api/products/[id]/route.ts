@@ -200,7 +200,7 @@ export async function GET(
       } : null,
       images: product.images.length > 0 ? product.images.map(img => ({
         id: img.id,
-        url: img.url,
+        url: img.isCloudinary && img.cloudinaryUrl ? img.cloudinaryUrl : img.url,
         altText: img.altText,
         sortOrder: img.sortOrder,
         is360View: img.is360View,

@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       } : undefined,
       images: product.images.length > 0 ? product.images.map(img => ({
         id: img.id,
-        url: img.url,
+        url: img.isCloudinary && img.cloudinaryUrl ? img.cloudinaryUrl : img.url,
         isPrimary: img.isPrimary,
         altText: img.altText,
         cloudinaryId: img.cloudinaryId,

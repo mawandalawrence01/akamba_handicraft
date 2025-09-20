@@ -22,6 +22,13 @@ export async function GET(request: NextRequest) {
         image: true,
         parentId: true,
         sortOrder: true,
+        cloudinaryId: true,
+        cloudinaryUrl: true,
+        imageWidth: true,
+        imageHeight: true,
+        imageFormat: true,
+        imageFileSize: true,
+        isCloudinary: true,
         _count: {
           select: {
             products: {
@@ -45,10 +52,17 @@ export async function GET(request: NextRequest) {
       name: category.name,
       slug: category.slug,
       description: category.description,
-      image: category.image,
+      image: category.isCloudinary && category.cloudinaryUrl ? category.cloudinaryUrl : category.image,
       productCount: category._count.products,
       featured: category.sortOrder >= 0, // Consider categories with sortOrder >= 0 as featured
-      parentId: category.parentId
+      parentId: category.parentId,
+      cloudinaryId: category.cloudinaryId,
+      cloudinaryUrl: category.cloudinaryUrl,
+      imageWidth: category.imageWidth,
+      imageHeight: category.imageHeight,
+      imageFormat: category.imageFormat,
+      imageFileSize: category.imageFileSize,
+      isCloudinary: category.isCloudinary
     }))
 
     return NextResponse.json({ 
