@@ -107,58 +107,73 @@ export function CloudinaryUploadWidget({
       return
     }
 
-    uploadWidgetRef.current = window.cloudinary.createUploadWidget(
-      {
-        cloudName: cloudName,
-        uploadPreset: 'akamba_handicraft', // Make sure this preset exists in Cloudinary
-        sources: ['local', 'url', 'camera', 'image_search', 'google_drive', 'dropbox'],
-        multiple: multiple,
-        maxFiles: maxFiles,
-        folder: folder,
-        cropping: cropping,
-        croppingAspectRatio: croppingAspectRatio,
-        showAdvancedOptions: showAdvancedOptions,
-        clientAllowedFormats: allowedFormats,
-        maxFileSize: maxFileSize,
-        theme: theme,
-        styles: {
-          palette: {
-            window: '#FFFFFF',
-            sourceBg: '#F4F4F5',
-            windowBorder: '#90A0B3',
-            tabIcon: '#0078FF',
-            inactiveTabIcon: '#69778A',
-            menuIcons: '#0078FF',
-            link: '#0078FF',
-            action: '#0078FF',
-            inProgress: '#0078FF',
-            complete: '#20B832',
-            error: '#EA2727',
-            textDark: '#000000',
-            textLight: '#FFFFFF'
-          },
-          fonts: {
-            default: null,
-            "'Inter', sans-serif": {
-              url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-              active: true
-            }
-          }
+    // Try to create widget with upload preset first, fallback to unsigned if preset doesn't exist
+    const widgetConfig = {
+      cloudName: cloudName,
+      sources: ['local', 'url', 'camera', 'image_search', 'google_drive', 'dropbox'],
+      multiple: multiple,
+      maxFiles: maxFiles,
+      folder: folder,
+      cropping: cropping,
+      croppingAspectRatio: croppingAspectRatio,
+      showAdvancedOptions: showAdvancedOptions,
+      clientAllowedFormats: allowedFormats,
+      maxFileSize: maxFileSize,
+      theme: theme,
+      // Prevent automatic redirects
+      autoMinimize: false,
+      // Ensure widget stays open
+      closeAfterUpload: false,
+      // Better error handling
+      showCompletedButton: true,
+      styles: {
+        palette: {
+          window: '#FFFFFF',
+          sourceBg: '#F4F4F5',
+          windowBorder: '#90A0B3',
+          tabIcon: '#0078FF',
+          inactiveTabIcon: '#69778A',
+          menuIcons: '#0078FF',
+          link: '#0078FF',
+          action: '#0078FF',
+          inProgress: '#0078FF',
+          complete: '#20B832',
+          error: '#EA2727',
+          textDark: '#000000',
+          textLight: '#FFFFFF'
         },
-        text: {
-          en: {
-            local: {
-              menu_title: 'Upload from Device',
-              menu_dropbox: 'Dropbox',
-              menu_google_drive: 'Google Drive',
-              menu_url: 'Upload from URL',
-              menu_camera: 'Take Photo',
-              menu_image_search: 'Search Images'
-            }
+        fonts: {
+          default: null,
+          "'Inter', sans-serif": {
+            url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+            active: true
           }
         }
       },
+      text: {
+        en: {
+          local: {
+            menu_title: 'Upload from Device',
+            menu_dropbox: 'Dropbox',
+            menu_google_drive: 'Google Drive',
+            menu_url: 'Upload from URL',
+            menu_camera: 'Take Photo',
+            menu_image_search: 'Search Images'
+          }
+        }
+      }
+    }
+
+    // Try with upload preset first, fallback to unsigned
+    try {
+      uploadWidgetRef.current = window.cloudinary.createUploadWidget(
+        {
+          ...widgetConfig,
+          uploadPreset: 'akamba_handicraft'
+        },
       (error: any, result: any) => {
+        console.log('Widget event:', result?.event, result)
+        
         if (error) {
           console.error('Upload widget error:', error)
           toast.error('Upload failed: ' + (error.message || 'Unknown error'))
@@ -167,31 +182,144 @@ export function CloudinaryUploadWidget({
           return
         }
 
-        if (result && result.event === 'success') {
-          console.log('Upload successful:', result.info)
-          const uploadResult: CloudinaryUploadResult = result.info
-          
-          setUploadedImages(prev => [...prev, uploadResult])
-          toast.success('Image uploaded successfully!')
-          onUploadSuccess?.(uploadResult)
-          setIsLoading(false)
-        }
+        if (!result) return
 
-        if (result && result.event === 'upload-added') {
-          setIsLoading(true)
-          toast.loading('Uploading image...', { id: 'upload' })
-        }
-
-        if (result && result.event === 'upload-progress') {
-          const progress = Math.round(result.info.progress.percent)
-          toast.loading(`Uploading... ${progress}%`, { id: 'upload' })
-        }
-
-        if (result && result.event === 'upload-complete') {
-          toast.success('Upload complete!', { id: 'upload' })
+        switch (result.event) {
+          case 'display-changed':
+            console.log('Widget display changed')
+            break
+            
+          case 'show':
+            console.log('Widget opened')
+            setIsLoading(false)
+            break
+            
+          case 'close':
+            console.log('Widget closed')
+            setIsLoading(false)
+            break
+            
+          case 'upload-added':
+            console.log('Upload added:', result.info)
+            setIsLoading(true)
+            toast.loading('Uploading image...', { id: 'upload' })
+            break
+            
+          case 'upload-progress':
+            const progress = Math.round(result.info.progress.percent)
+            console.log('Upload progress:', progress + '%')
+            toast.loading(`Uploading... ${progress}%`, { id: 'upload' })
+            break
+            
+          case 'upload-complete':
+            console.log('Upload complete:', result.info)
+            toast.success('Upload complete!', { id: 'upload' })
+            break
+            
+          case 'success':
+            console.log('Upload successful:', result.info)
+            const uploadResult: CloudinaryUploadResult = result.info
+            
+            setUploadedImages(prev => [...prev, uploadResult])
+            toast.success('Image uploaded successfully!')
+            onUploadSuccess?.(uploadResult)
+            setIsLoading(false)
+            break
+            
+          case 'abort':
+            console.log('Upload aborted')
+            setIsLoading(false)
+            toast.dismiss('upload')
+            break
+            
+          case 'retry':
+            console.log('Upload retry')
+            break
+            
+          default:
+            console.log('Unknown widget event:', result.event)
         }
       }
     )
+    } catch (error) {
+      console.warn('Failed to create widget with upload preset, trying unsigned:', error)
+      // Fallback to unsigned upload (requires API key and secret)
+      uploadWidgetRef.current = window.cloudinary.createUploadWidget(
+        {
+          ...widgetConfig,
+          // Remove uploadPreset for unsigned upload
+        },
+        (error: any, result: any) => {
+          console.log('Widget event (unsigned):', result?.event, result)
+          
+          if (error) {
+            console.error('Upload widget error:', error)
+            toast.error('Upload failed: ' + (error.message || 'Unknown error'))
+            onUploadError?.(error)
+            setIsLoading(false)
+            return
+          }
+
+          if (!result) return
+
+          switch (result.event) {
+            case 'display-changed':
+              console.log('Widget display changed')
+              break
+              
+            case 'show':
+              console.log('Widget opened')
+              setIsLoading(false)
+              break
+              
+            case 'close':
+              console.log('Widget closed')
+              setIsLoading(false)
+              break
+              
+            case 'upload-added':
+              console.log('Upload added:', result.info)
+              setIsLoading(true)
+              toast.loading('Uploading image...', { id: 'upload' })
+              break
+              
+            case 'upload-progress':
+              const progress = Math.round(result.info.progress.percent)
+              console.log('Upload progress:', progress + '%')
+              toast.loading(`Uploading... ${progress}%`, { id: 'upload' })
+              break
+              
+            case 'upload-complete':
+              console.log('Upload complete:', result.info)
+              toast.success('Upload complete!', { id: 'upload' })
+              break
+              
+            case 'success':
+              console.log('Upload successful:', result.info)
+              const uploadResult: CloudinaryUploadResult = result.info
+              
+              setUploadedImages(prev => [...prev, uploadResult])
+              toast.success('Image uploaded successfully!')
+              onUploadSuccess?.(uploadResult)
+              setIsLoading(false)
+              break
+              
+            case 'abort':
+              console.log('Upload aborted')
+              setIsLoading(false)
+              toast.dismiss('upload')
+              break
+              
+            case 'retry':
+              console.log('Upload retry')
+              break
+              
+            default:
+              console.log('Unknown widget event:', result.event)
+          }
+        }
+      )
+    }
   }, [isWidgetLoaded, multiple, maxFiles, folder, cropping, croppingAspectRatio, showAdvancedOptions, allowedFormats, maxFileSize, theme, onUploadSuccess, onUploadError])
 
   const openUploadWidget = () => {
@@ -199,7 +327,13 @@ export function CloudinaryUploadWidget({
       toast.error('Upload widget not ready')
       return
     }
-    uploadWidgetRef.current.open()
+    
+    try {
+      uploadWidgetRef.current.open()
+    } catch (error) {
+      console.error('Error opening upload widget:', error)
+      toast.error('Failed to open upload widget. Please check your Cloudinary configuration.')
+    }
   }
 
   const removeImage = (publicId: string) => {
