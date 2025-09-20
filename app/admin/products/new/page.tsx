@@ -43,13 +43,22 @@ import Link from 'next/link'
 import axios from 'axios'
 import { AdminPageLayout, AdminCard } from '@/components/admin/admin-page-layout'
 import { OptimizedImage } from '@/components/ui/optimized-image'
+import { ProductUploadWidget } from '@/components/admin/product-upload-widget'
 
 interface ProductImage {
   id: string
   url: string
   altText: string
+  sortOrder: number
   isPrimary: boolean
   is360View: boolean
+  cloudinaryId?: string
+  cloudinaryUrl?: string
+  width?: number
+  height?: number
+  format?: string
+  fileSize?: number
+  isCloudinary?: boolean
 }
 
 interface ProductVideo {
@@ -175,8 +184,16 @@ export default function AddProductPage() {
             id: `temp-${Date.now()}-${index}`,
             url: e.target?.result as string,
             altText: `${formData.name} - Image ${images.length + index + 1}`,
+            sortOrder: images.length + index,
             isPrimary: images.length === 0 && index === 0,
-            is360View: false
+            is360View: false,
+            cloudinaryId: undefined,
+            cloudinaryUrl: undefined,
+            width: undefined,
+            height: undefined,
+            format: undefined,
+            fileSize: undefined,
+            isCloudinary: false
           }
           setImages(prev => [...prev, newImage])
         }
@@ -562,70 +579,12 @@ export default function AddProductPage() {
                 <CardTitle>Product Images</CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                    dragOver ? 'border-orange-500 bg-orange-50' : 'border-gray-300'
-                  }`}
-                  onDragOver={(e) => {
-                    e.preventDefault()
-                    setDragOver(true)
-                  }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={handleDrop}
-                >
-                  <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="mt-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <label htmlFor="image-upload" className="cursor-pointer">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Images
-                        <input
-                          id="image-upload"
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
-                        />
-                      </label>
-                    </Button>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Drag and drop images here, or click to browse
-                  </p>
-                </div>
-
-                {images.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {images.map((image, index) => (
-                      <div key={image.id} className="flex items-center gap-2 p-2 border rounded">
-                        <OptimizedImage 
-                          src={getImageUrl(image.url) || image.url} 
-                          alt={image.altText} 
-                          width={48} 
-                          height={48} 
-                          className="object-cover rounded" 
-                          quality="auto"
-                          format="auto"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{image.altText}</p>
-                          {image.isPrimary && (
-                            <Badge variant="secondary" className="text-xs">Primary</Badge>
-                          )}
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setImages(prev => prev.filter(img => img.id !== image.id))}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <ProductUploadWidget
+                  existingImages={images}
+                  onImagesChange={setImages}
+                  maxImages={10}
+                  className="w-full"
+                />
               </CardContent>
             </Card>
 

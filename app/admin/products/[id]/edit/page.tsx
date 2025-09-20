@@ -44,13 +44,22 @@ import Image from 'next/image'
 import { CldImage } from 'next-cloudinary'
 import { AdminPageLayout, AdminCard } from '@/components/admin/admin-page-layout'
 import { OptimizedImage } from '@/components/ui/optimized-image'
+import { ProductUploadWidget } from '@/components/admin/product-upload-widget'
 
 interface ProductImage {
   id: string
   url: string
   altText: string
+  sortOrder: number
   isPrimary: boolean
   is360View: boolean
+  cloudinaryId?: string
+  cloudinaryUrl?: string
+  width?: number
+  height?: number
+  format?: string
+  fileSize?: number
+  isCloudinary?: boolean
 }
 
 interface ProductVideo {
@@ -308,8 +317,16 @@ export default function EditProductPage() {
           id: `temp-${Date.now()}-${index}`,
           url: result.url,
           altText: file.name.split('.')[0], // Remove file extension
+          sortOrder: images.length + index,
           isPrimary: images.length === 0 && index === 0,
-          is360View: false
+          is360View: false,
+          cloudinaryId: result.cloudinaryId,
+          cloudinaryUrl: result.cloudinaryUrl,
+          width: result.width,
+          height: result.height,
+          format: result.format,
+          fileSize: result.fileSize,
+          isCloudinary: result.isCloudinary
         }
       } catch (error) {
         console.error('Error uploading file:', error)
@@ -945,129 +962,12 @@ export default function EditProductPage() {
                   <CardTitle>Product Images</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                      dragOver ? 'border-amber-500 bg-amber-50' : 
-                      uploadingImages ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-                    }`}
-                    onDragOver={(e) => {
-                      e.preventDefault()
-                      setDragOver(true)
-                    }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={(e) => {
-                      e.preventDefault()
-                      setDragOver(false)
-                      if (!uploadingImages) {
-                        handleImageUpload(e.dataTransfer.files)
-                      }
-                    }}
-                  >
-                    {uploadingImages ? (
-                      <>
-                        <Loader2 className="h-8 w-8 mx-auto text-blue-500 mb-2 animate-spin" />
-                        <p className="text-sm text-blue-600 mb-2">
-                          Uploading images...
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Please wait while your images are being processed
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                        <p className="text-sm text-gray-600 mb-2">
-                          Drag & drop images here or click to upload
-                        </p>
-                        <p className="text-xs text-gray-500 mb-4">
-                          Supports JPG, PNG, GIF up to 5MB each
-                        </p>
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
-                          className="hidden"
-                          id="image-upload"
-                          disabled={uploadingImages}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById('image-upload')?.click()}
-                          disabled={uploadingImages}
-                        >
-                          Choose Images
-                        </Button>
-                      </>
-                    )}
-                  </div>
-
-                  {images.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {images.map((image, index) => (
-                        <div key={image.id} className="relative group border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
-                          <div className="aspect-square relative">
-                            <OptimizedImage
-                              src={image.url}
-                              alt={image.altText}
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                              quality="auto"
-                              format="auto"
-                              onError={(e) => {
-                                console.error('Image failed to load:', image.url)
-                                e.currentTarget.style.display = 'none'
-                              }}
-                            />
-                            {image.isPrimary && (
-                              <div className="absolute top-2 left-2">
-                                <Badge className="bg-amber-500 text-white text-xs font-medium">
-                                  Primary
-                                </Badge>
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                              <div className="opacity-0 group-hover:opacity-100 flex space-x-2 transition-opacity duration-200">
-                                {!image.isPrimary && (
-                                  <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => setPrimaryImage(image.id)}
-                                    className="bg-white text-gray-900 hover:bg-gray-100 shadow-sm"
-                                  >
-                                    Set Primary
-                                  </Button>
-                                )}
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => removeImage(image.id)}
-                                  className="shadow-sm"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="p-3 border-t bg-gray-50">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {image.altText}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {image.isPrimary ? 'Primary Image' : 'Secondary Image'}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1 truncate">
-                              {image.url}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <ProductUploadWidget
+                    existingImages={images}
+                    onImagesChange={setImages}
+                    maxImages={10}
+                    className="w-full"
+                  />
                 </CardContent>
               </AdminCard>
 
