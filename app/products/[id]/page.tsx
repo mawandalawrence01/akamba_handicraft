@@ -17,6 +17,7 @@ import { Footer } from '@/components/layout/footer'
 import { SocialShare } from '@/components/social/social-share'
 import { LikeButton } from '@/components/social/like-button'
 import { OptimizedImage } from '@/components/ui/optimized-image'
+import { ProductSkeleton } from '@/components/ui/product-skeleton'
 
 // Fetch product data from API
 const fetchProduct = async (id: string) => {
@@ -40,6 +41,7 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [imageZoomed, setImageZoomed] = useState(false)
   const { addItem } = useCartStore()
 
   useEffect(() => {
@@ -83,14 +85,7 @@ export default function ProductPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading product...</p>
-        </div>
-      </div>
-    )
+    return <ProductSkeleton />
   }
 
   if (error) {
@@ -145,92 +140,115 @@ export default function ProductPage() {
           <span className="text-gray-900">{product.name}</span>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 mb-16">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
           {/* Product Images */}
           <div className="space-y-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="aspect-square rounded-2xl overflow-hidden bg-white shadow-lg"
+              className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-lg cursor-pointer group"
+              onClick={() => setImageZoomed(!imageZoomed)}
             >
               <OptimizedImage
                 src={product.images[selectedImage]?.url || '/placeholder-product.jpg'}
                 alt={product.images[selectedImage]?.altText || product.name}
                 fill
-                className="object-cover"
+                className={`object-contain p-4 transition-transform duration-300 ${
+                  imageZoomed ? 'scale-110' : 'group-hover:scale-105'
+                }`}
                 sizes="(max-width: 768px) 100vw, 50vw"
                 quality="auto"
                 format="auto"
+                priority
               />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white bg-opacity-90 rounded-full p-2">
+                  <Eye className="h-5 w-5 text-gray-700" />
+                </div>
+              </div>
             </motion.div>
             
-            <div className="grid grid-cols-3 gap-4">
-              {product.images.map((image: any, index: number) => (
-                <button
-                  key={image.id || index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
-                    selectedImage === index ? 'border-amber-500' : 'border-gray-200'
-                  }`}
-                >
-                  <OptimizedImage
-                    src={image.url || '/placeholder-product.jpg'}
-                    alt={image.altText || `${product.name} view ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 33vw, 16vw"
-                    quality="auto"
-                    format="auto"
-                  />
-                </button>
-              ))}
-            </div>
+            {product.images.length > 1 && (
+              <div className={`grid gap-4 ${
+                product.images.length === 2 ? 'grid-cols-2' :
+                product.images.length === 3 ? 'grid-cols-3' :
+                product.images.length === 4 ? 'grid-cols-4' :
+                'grid-cols-3'
+              }`}>
+                {product.images.slice(0, 6).map((image: any, index: number) => (
+                  <button
+                    key={image.id || index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
+                      selectedImage === index 
+                        ? 'border-amber-500 ring-2 ring-amber-200' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <OptimizedImage
+                      src={image.url || '/placeholder-product.jpg'}
+                      alt={image.altText || `${product.name} view ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 33vw, 16vw"
+                      quality="auto"
+                      format="auto"
+                    />
+                  </button>
+                ))}
+                {product.images.length > 6 && (
+                  <div className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
+                    <span className="text-sm text-gray-500">+{product.images.length - 6}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline">{product.category?.name || 'Product'}</Badge>
+              <div className="flex items-center gap-2 mb-3">
+                <Badge variant="outline" className="text-xs">{product.category?.name || 'Product'}</Badge>
                 {product.originalPrice && (
-                  <Badge variant="destructive">
+                  <Badge variant="destructive" className="text-xs">
                     {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                   </Badge>
                 )}
               </div>
               
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">{product.name}</h1>
               
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-5 w-5 ${
-                        i < Math.floor(product.rating)
+                      className={`h-4 w-4 ${
+                        i < Math.floor(product.rating || 0)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
                     />
                   ))}
-                  <span className="ml-2 text-gray-600">
-                    {product.rating} ({product.reviewCount} reviews)
+                  <span className="ml-2 text-sm text-gray-600">
+                    {product.rating || 0} ({product.reviewCount || 0} reviews)
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 mb-6">
-                <span className="text-3xl font-bold text-gray-900">${product.price}</span>
+                <span className="text-2xl lg:text-3xl font-bold text-gray-900">${product.price}</span>
                 {product.originalPrice && (
-                  <span className="text-xl text-gray-500 line-through">
+                  <span className="text-lg text-gray-500 line-through">
                     ${product.originalPrice}
                   </span>
                 )}
               </div>
 
-              <p className="text-gray-700 leading-relaxed mb-6">
-                {product.description}
-              </p>
+              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed mb-6">
+                <p>{product.description}</p>
+              </div>
             </div>
 
             {/* Quantity and Add to Cart */}
