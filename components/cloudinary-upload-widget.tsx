@@ -225,114 +225,69 @@ export function CloudinaryUploadWidget({
 
   return (
     <div className={className}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Cloudinary Upload Widget
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Upload Button */}
-          <Button
-            onClick={openUploadWidget}
-            disabled={isLoading}
-            variant={buttonVariant}
-            className="w-full"
-          >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4 mr-2" />
-                {buttonText}
-              </>
-            )}
-          </Button>
-
-          {/* Uploaded Images Display */}
-          {uploadedImages.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium">Uploaded Images ({uploadedImages.length})</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearAllImages}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Clear All
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {uploadedImages.map((image, index) => (
-                  <div key={image.public_id} className="relative group border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
-                    <div className="aspect-square relative">
-                      <img
-                        src={image.secure_url}
-                        alt={`Uploaded image ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeImage(image.public_id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="secondary" className="text-xs">
-                          {image.format.toUpperCase()}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {Math.round(image.bytes / 1024)} KB
-                        </Badge>
-                      </div>
-                      
-                      <div className="text-xs text-gray-600 space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Check className="h-3 w-3 text-green-500" />
-                          <span>Uploaded successfully</span>
-                        </div>
-                        <div className="text-gray-500">
-                          {image.width} × {image.height}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+      <div className="space-y-4">
+        {/* Upload Button */}
+        <Button
+          onClick={openUploadWidget}
+          disabled={isLoading}
+          variant={buttonVariant}
+          className="w-full"
+        >
+          {isLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Uploading...
+            </>
+          ) : (
+            <>
+              <Upload className="h-4 w-4 mr-2" />
+              {buttonText}
+            </>
           )}
+        </Button>
 
-          {/* Upload Info */}
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <h4 className="font-medium text-sm flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" />
-              Upload Features
-            </h4>
-            <div className="text-xs text-gray-600 space-y-1">
-              <div>• Drag & drop multiple images</div>
-              <div>• Upload from URL, camera, or cloud storage</div>
-              <div>• Automatic image optimization</div>
-              <div>• Built-in cropping and transformations</div>
-              <div>• Max file size: {Math.round(maxFileSize / 1024 / 1024)}MB</div>
-              <div>• Supported formats: {allowedFormats.join(', ').toUpperCase()}</div>
-            </div>
+        {/* Uploaded Images Display */}
+        {uploadedImages.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {uploadedImages.map((image, index) => (
+              <div key={image.public_id} className="relative group border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div className="aspect-square relative">
+                  <img
+                    src={image.secure_url}
+                    alt={`Uploaded image ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removeImage(image.public_id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="p-2 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="secondary" className="text-xs">
+                      {image.format.toUpperCase()}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {Math.round(image.bytes / 1024)} KB
+                    </Badge>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500 text-center">
+                    {image.width} × {image.height}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
   )
 }
