@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
         isCloudinary: img.isCloudinary
       })) : [{
         id: 'no-image',
-        url: '/placeholder-product.jpg',
+        url: '/placeholder-product.svg',
         isPrimary: true,
         altText: product.name,
         cloudinaryId: null,

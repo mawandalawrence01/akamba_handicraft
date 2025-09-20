@@ -214,7 +214,7 @@ export async function GET(
         isCloudinary: img.isCloudinary
       })) : [{
         id: 'no-image',
-        url: '/placeholder-product.jpg',
+        url: '/placeholder-product.svg',
         altText: product.name,
         sortOrder: 0,
         is360View: false,

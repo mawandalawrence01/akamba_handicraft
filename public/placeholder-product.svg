@@ -1,0 +1,6 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="400" height="400" fill="#F3F4F6"/>
+<path d="M200 150C165.363 150 137.5 177.863 137.5 212.5C137.5 247.137 165.363 275 200 275C234.637 275 262.5 247.137 262.5 212.5C262.5 177.863 234.637 150 200 150Z" fill="#D5D7DB"/>
+<path d="M150 300C150 289.477 158.477 281 169 281H231C241.523 281 250 289.477 250 300V315C250 325.523 241.523 334 231 334H169C158.477 334 150 325.523 150 315V300Z" fill="#D5D7DB"/>
+<text x="200" y="200" text-anchor="middle" fill="#9CA3AF" font-family="Arial, sans-serif" font-size="16">No Image</text>
+</svg>

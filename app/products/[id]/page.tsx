@@ -71,7 +71,7 @@ export default function ProductPage() {
       productId: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0]?.url || '/placeholder-product.jpg',
+      image: product.images[0]?.url || '/placeholder-product.svg',
     })
     
     toast.success('Added to cart!')
@@ -150,7 +150,7 @@ export default function ProductPage() {
               onClick={() => setImageZoomed(!imageZoomed)}
             >
               <OptimizedImage
-                src={product.images[selectedImage]?.url || '/placeholder-product.jpg'}
+                src={product.images[selectedImage]?.url || '/placeholder-product.svg'}
                 alt={product.images[selectedImage]?.altText || product.name}
                 fill
                 className={`object-contain p-4 transition-transform duration-300 ${
@@ -186,7 +186,7 @@ export default function ProductPage() {
                     }`}
                   >
                     <OptimizedImage
-                      src={image.url || '/placeholder-product.jpg'}
+                      src={image.url || '/placeholder-product.svg'}
                       alt={image.altText || `${product.name} view ${index + 1}`}
                       fill
                       className="object-cover"
