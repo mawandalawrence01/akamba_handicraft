@@ -251,42 +251,60 @@ export default function ProductPage() {
               </div>
             </div>
 
+            {/* Stock Status */}
+            <div className="flex items-center gap-2 mb-4">
+              {product.inStock ? (
+                <div className="flex items-center gap-2 text-green-600">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-medium">In Stock</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-red-600">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-sm font-medium">Out of Stock</span>
+                </div>
+              )}
+              <span className="text-sm text-gray-600">
+                ({product.stockQuantity} available)
+              </span>
+            </div>
+
             {/* Quantity and Add to Cart */}
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <span className="font-medium">Quantity:</span>
-                <div className="flex items-center border rounded-lg">
+                <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleQuantityChange(-1)}
                     disabled={quantity <= 1}
+                    className="h-10 w-10 hover:bg-gray-100"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="px-4 py-2 font-medium">{quantity}</span>
+                  <span className="px-4 py-2 font-semibold min-w-[3rem] text-center border-x border-gray-200">{quantity}</span>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleQuantityChange(1)}
                     disabled={quantity >= product.stockQuantity}
+                    className="h-10 w-10 hover:bg-gray-100"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                <span className="text-sm text-gray-600">
-                  {product.stockQuantity} available
-                </span>
               </div>
 
               <div className="flex gap-4">
                 <Button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
+                  disabled={!product.inStock}
+                  className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   size="lg"
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  Add to Cart
+                  {product.inStock ? 'Add to Cart' : 'Out of Stock'}
                 </Button>
                 
                 <LikeButton
@@ -302,7 +320,7 @@ export default function ProductPage() {
                   url={typeof window !== 'undefined' ? window.location.href : ''}
                   title={product.name}
                   description={product.description}
-                  imageUrl={product.images[0]?.url || '/placeholder-product.jpg'}
+                  imageUrl={product.images[0]?.url || '/placeholder-product.svg'}
                   productId={product.id}
                   variant="compact"
                   showLabel={false}
@@ -359,60 +377,188 @@ export default function ProductPage() {
               
               <TabsContent value="artisan" className="mt-6">
                 {product.artisan ? (
-                  <div className="flex items-start gap-6">
-                    <img
-                      src={product.artisan.image || '/placeholder-artisan.jpg'}
-                      alt={product.artisan.name}
-                      className="w-24 h-24 rounded-full object-cover"
-                    />
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">{product.artisan.name}</h3>
-                      <p className="text-gray-600 mb-1">{product.artisan.experience || 'Experienced'} artisan</p>
-                      <p className="text-gray-600 mb-4">{product.artisan.location || 'Kenya'}</p>
-                      <p className="text-gray-700">{product.artisan.bio || 'Skilled artisan creating beautiful handcrafted pieces.'}</p>
+                  <div className="space-y-6">
+                    <div className="flex items-start gap-6">
+                      <div className="relative">
+                        {product.artisan.image ? (
+                          <OptimizedImage
+                            src={product.artisan.image}
+                            alt={product.artisan.name}
+                            width={96}
+                            height={96}
+                            className="w-24 h-24 rounded-full object-cover border-4 border-amber-100"
+                          />
+                        ) : (
+                          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-2xl font-bold border-4 border-amber-100">
+                            {product.artisan.name.charAt(0)}
+                          </div>
+                        )}
+                        {product.artisan.isVerified && (
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs">✓</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-2xl font-bold text-gray-900">{product.artisan.name}</h3>
+                          {product.artisan.isVerified && (
+                            <Badge className="bg-green-100 text-green-800">
+                              Verified Artisan
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 mb-3">
+                          <div className="flex items-center gap-1 text-amber-600">
+                            <Calendar className="h-4 w-4" />
+                            <span className="text-sm font-medium">{product.artisan.experience || 0} years experience</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-600">
+                            <span className="text-sm">📍 {product.artisan.location || 'Kenya'}</span>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 leading-relaxed mb-4">
+                          {product.artisan.bio || 'Skilled artisan creating beautiful handcrafted pieces.'}
+                        </p>
+                        
+                        {product.artisan.specialties && product.artisan.specialties.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold text-gray-900 mb-2">Specialties</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {product.artisan.specialties.map((specialty: string, index: number) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {specialty}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-amber-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-amber-800 mb-2">About This Artisan</h4>
+                      <p className="text-amber-700 text-sm">
+                        This piece was carefully crafted by {product.artisan.name}, a {product.artisan.experience || 'experienced'} artisan 
+                        from {product.artisan.location || 'Kenya'}. Each piece is made with traditional techniques passed down through generations, 
+                        ensuring authentic craftsmanship and cultural significance.
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-gray-400 text-2xl">👤</span>
+                    </div>
                     <p className="text-gray-600">Artisan information not available</p>
                   </div>
                 )}
               </TabsContent>
               
               <TabsContent value="specifications" className="mt-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Dimensions</h3>
-                    <dl className="space-y-2">
-                      {product.dimensions ? (
-                        Object.entries(product.dimensions).map(([key, value]) => (
-                          <div key={key} className="flex justify-between">
-                            <dt className="text-gray-600 capitalize">{key}:</dt>
-                            <dd className="font-medium">{value as string}</dd>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <span className="text-amber-600">📏</span>
+                        Dimensions
+                      </h3>
+                      <dl className="space-y-3">
+                        {product.dimensions ? (
+                          Object.entries(product.dimensions).map(([key, value]) => (
+                            <div key={key} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
+                              <dt className="text-gray-600 capitalize font-medium">{key}:</dt>
+                              <dd className="font-semibold text-gray-900">{value as string} cm</dd>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-gray-600">Dimensions not specified</p>
+                        )}
+                        {product.weight && (
+                          <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                            <dt className="text-gray-600 font-medium">Weight:</dt>
+                            <dd className="font-semibold text-gray-900">{product.weight} kg</dd>
                           </div>
-                        ))
-                      ) : (
-                        <p className="text-gray-600">Dimensions not specified</p>
-                      )}
-                      {product.weight && (
-                        <div className="flex justify-between">
-                          <dt className="text-gray-600">Weight:</dt>
-                          <dd className="font-medium">{product.weight}g</dd>
+                        )}
+                      </dl>
+                    </div>
+                    
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <span className="text-amber-600">🏷️</span>
+                        Product Details
+                      </h3>
+                      <dl className="space-y-3">
+                        <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                          <dt className="text-gray-600 font-medium">SKU:</dt>
+                          <dd className="font-semibold text-gray-900">{product.sku || 'N/A'}</dd>
                         </div>
-                      )}
-                    </dl>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                          <dt className="text-gray-600 font-medium">Handmade:</dt>
+                          <dd className="font-semibold text-gray-900">{product.isHandmade ? 'Yes' : 'No'}</dd>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                          <dt className="text-gray-600 font-medium">Stock:</dt>
+                          <dd className="font-semibold text-gray-900">{product.stockQuantity} available</dd>
+                        </div>
+                        <div className="flex justify-between items-center py-2">
+                          <dt className="text-gray-600 font-medium">Category:</dt>
+                          <dd className="font-semibold text-gray-900">{product.category?.name || 'N/A'}</dd>
+                        </div>
+                      </dl>
+                    </div>
                   </div>
                   
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Materials</h3>
-                    {product.materials && product.materials.length > 0 ? (
-                      <ul className="space-y-2">
-                        {product.materials.map((material: string, index: number) => (
-                          <li key={index} className="text-gray-700">• {material}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-gray-600">Materials not specified</p>
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <span className="text-amber-600">🌿</span>
+                        Materials
+                      </h3>
+                      {product.materials && product.materials.length > 0 ? (
+                        <div className="space-y-3">
+                          {product.materials.map((material: string, index: number) => (
+                            <div key={index} className="flex items-center gap-3 py-2 border-b border-gray-200 last:border-b-0">
+                              <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                              <span className="text-gray-700 font-medium">{material}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-600">Materials not specified</p>
+                      )}
+                    </div>
+                    
+                    {product.colors && product.colors.length > 0 && (
+                      <div className="bg-gray-50 p-6 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                          <span className="text-amber-600">🎨</span>
+                          Available Colors
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {product.colors.map((color: string, index: number) => (
+                            <Badge key={index} variant="outline" className="text-sm">
+                              {color}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {product.tags && product.tags.length > 0 && (
+                      <div className="bg-gray-50 p-6 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                          <span className="text-amber-600">🏷️</span>
+                          Tags
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {product.tags.map((tag: string, index: number) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              #{tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -445,6 +591,105 @@ export default function ProductPage() {
           </CardContent>
         </Card>
 
+        {/* Reviews Section */}
+        {product.reviews && product.reviews.length > 0 && (
+          <Card className="mb-16">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Customer Reviews</h2>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-5 w-5 ${
+                            i < Math.floor(product.rating || 0)
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-lg font-semibold">{product.rating || 0}</span>
+                    <span className="text-gray-600">({product.reviewCount || 0} reviews)</span>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">
+                  Write a Review
+                </Button>
+              </div>
+              
+              <div className="space-y-6">
+                {product.reviews.map((review: any, index: number) => (
+                  <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-semibold">
+                          {review.user.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{review.user.name}</h4>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${
+                                    i < review.rating
+                                      ? 'text-yellow-400 fill-current'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-sm text-gray-600">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </span>
+                            {review.isVerified && (
+                              <Badge variant="secondary" className="text-xs">
+                                Verified Purchase
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="ml-13">
+                      <h5 className="font-medium text-gray-900 mb-2">{review.title}</h5>
+                      <p className="text-gray-700 leading-relaxed">{review.content}</p>
+                      
+                      {review.helpfulCount > 0 && (
+                        <div className="flex items-center gap-4 mt-3">
+                          <Button variant="ghost" size="sm" className="text-gray-600">
+                            <span className="mr-1">👍</span>
+                            Helpful ({review.helpfulCount})
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Related Products Section */}
+        <Card className="mb-16">
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">You Might Also Like</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* This would typically fetch related products from the same category or artisan */}
+              <div className="text-center py-8 text-gray-500">
+                <p>Related products will be displayed here</p>
+                <p className="text-sm">(Feature coming soon)</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Enhanced Social Sharing Section */}
         <Card className="mb-16">
           <CardContent className="p-6">
@@ -452,7 +697,7 @@ export default function ProductPage() {
               url={typeof window !== 'undefined' ? window.location.href : ''}
               title={product.name}
               description={`Discover this beautiful ${product.category?.name?.toLowerCase() || 'product'} handcrafted by ${product.artisan?.name || 'skilled artisans'}. ${product.description}`}
-              imageUrl={product.images[0]?.url || '/placeholder-product.jpg'}
+              imageUrl={product.images[0]?.url || '/placeholder-product.svg'}
               productId={product.id}
               variant="default"
               showLabel={true}
