@@ -173,7 +173,7 @@ export default function OrdersPage() {
           customerEmail: apiOrder.user?.email || apiOrder.shippingEmail,
           status: apiOrder.status as any,
           paymentStatus: apiOrder.paymentStatus as any,
-          total: apiOrder.totalAmount,
+          total: Number(apiOrder.totalAmount),
           itemCount: apiOrder._count.items,
           createdAt: apiOrder.createdAt,
           shippingAddress: {
