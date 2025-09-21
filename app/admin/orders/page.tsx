@@ -119,6 +119,7 @@ interface ApiOrder {
     id: string
     firstName: string
     lastName: string
+    name: string
     email: string
   }
   items: Array<{
@@ -164,33 +165,53 @@ export default function OrdersPage() {
       const response = await fetch(`/api/admin/orders?${params}`)
       if (response.ok) {
         const data = await response.json()
-        const processedOrders = data.orders.map((apiOrder: ApiOrder): Order => ({
-          id: apiOrder.id,
-          orderNumber: apiOrder.orderNumber,
-          customerName: apiOrder.user 
-            ? `${apiOrder.user.firstName} ${apiOrder.user.lastName}`
-            : `${apiOrder.shippingFirstName} ${apiOrder.shippingLastName}`,
-          customerEmail: apiOrder.user?.email || apiOrder.shippingEmail,
-          status: apiOrder.status as any,
-          paymentStatus: apiOrder.paymentStatus as any,
-          total: Number(apiOrder.totalAmount),
-          itemCount: apiOrder._count.items,
-          createdAt: apiOrder.createdAt,
-          shippingAddress: {
-            street: apiOrder.shippingAddress,
-            city: apiOrder.shippingCity,
-            state: apiOrder.shippingState || '',
-            country: apiOrder.shippingCountry,
-            postalCode: apiOrder.shippingPostalCode
-          },
-          items: apiOrder.items.map(item => ({
-            id: item.id,
-            productName: item.product.name,
-            quantity: item.quantity,
-            price: item.price,
-            image: item.product.images[0]?.url || '/placeholder-product.jpg'
-          }))
-        }))
+        const processedOrders = data.orders.map((apiOrder: ApiOrder): Order => {
+          let customerName = 'Unknown Customer'
+          
+          if (apiOrder.user) {
+            // For Google OAuth users, use the 'name' field if firstName/lastName are null
+            if (apiOrder.user.firstName && apiOrder.user.lastName) {
+              customerName = `${apiOrder.user.firstName} ${apiOrder.user.lastName}`
+            } else if (apiOrder.user.name) {
+              customerName = apiOrder.user.name
+            } else {
+              // Fallback to email if no name is available
+              customerName = apiOrder.user.email || 'Unknown Customer'
+            }
+          } else {
+            // For guest orders, use shipping information
+            customerName = `${apiOrder.shippingFirstName} ${apiOrder.shippingLastName}`.trim()
+            if (!customerName || customerName === ' ') {
+              customerName = 'Guest Customer'
+            }
+          }
+          
+          return {
+            id: apiOrder.id,
+            orderNumber: apiOrder.orderNumber,
+            customerName,
+            customerEmail: apiOrder.user?.email || apiOrder.shippingEmail,
+            status: apiOrder.status as any,
+            paymentStatus: apiOrder.paymentStatus as any,
+            total: Number(apiOrder.totalAmount),
+            itemCount: apiOrder._count.items,
+            createdAt: apiOrder.createdAt,
+            shippingAddress: {
+              street: apiOrder.shippingAddress,
+              city: apiOrder.shippingCity,
+              state: apiOrder.shippingState || '',
+              country: apiOrder.shippingCountry,
+              postalCode: apiOrder.shippingPostalCode
+            },
+            items: apiOrder.items.map(item => ({
+              id: item.id,
+              productName: item.product.name,
+              quantity: item.quantity,
+              price: item.price,
+              image: item.product.images[0]?.url || '/placeholder-product.jpg'
+            }))
+          }
+        })
         
         setOrders(processedOrders)
         setFilteredOrders(processedOrders)

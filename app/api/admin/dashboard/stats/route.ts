@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
         createdAt: { gte: startDate }
       },
       include: {
-        user: { select: { firstName: true, lastName: true } }
+        user: { select: { firstName: true, lastName: true, name: true, email: true } }
       }
     })
 
@@ -172,14 +172,36 @@ export async function GET(request: NextRequest) {
     })
 
     // Process recent orders
-    const processedOrders = recentOrders.map(order => ({
-      id: order.id,
-      orderNumber: order.orderNumber,
-      customerName: order.user ? `${order.user.firstName} ${order.user.lastName}` : `${order.shippingFirstName} ${order.shippingLastName}`,
-      total: order.totalAmount.toNumber(),
-      status: order.status,
-      createdAt: order.createdAt.toISOString()
-    }))
+    const processedOrders = recentOrders.map(order => {
+      let customerName = 'Unknown Customer'
+      
+      if (order.user) {
+        // For Google OAuth users, use the 'name' field if firstName/lastName are null
+        if (order.user.firstName && order.user.lastName) {
+          customerName = `${order.user.firstName} ${order.user.lastName}`
+        } else if (order.user.name) {
+          customerName = order.user.name
+        } else {
+          // Fallback to email if no name is available
+          customerName = order.user.email || 'Unknown Customer'
+        }
+      } else {
+        // For guest orders, use shipping information
+        customerName = `${order.shippingFirstName} ${order.shippingLastName}`.trim()
+        if (!customerName || customerName === ' ') {
+          customerName = 'Guest Customer'
+        }
+      }
+      
+      return {
+        id: order.id,
+        orderNumber: order.orderNumber,
+        customerName,
+        total: order.totalAmount.toNumber(),
+        status: order.status,
+        createdAt: order.createdAt.toISOString()
+      }
+    })
 
     const stats = {
       totalProducts,
