@@ -8,6 +8,69 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const featured = searchParams.get('featured')
     const limit = searchParams.get('limit')
+    const slug = searchParams.get('slug')
+    
+    // If slug is provided, return single category
+    if (slug) {
+      const category = await prisma.category.findUnique({
+        where: {
+          slug: slug,
+          isActive: true
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          image: true,
+          parentId: true,
+          sortOrder: true,
+          cloudinaryId: true,
+          cloudinaryUrl: true,
+          imageWidth: true,
+          imageHeight: true,
+          imageFormat: true,
+          imageFileSize: true,
+          isCloudinary: true,
+          _count: {
+            select: {
+              products: {
+                where: {
+                  isActive: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      if (!category) {
+        return NextResponse.json(
+          { error: 'Category not found' },
+          { status: 404 }
+        )
+      }
+
+      const transformedCategory = {
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        image: category.isCloudinary && category.cloudinaryUrl ? category.cloudinaryUrl : category.image,
+        productCount: category._count.products,
+        featured: category.sortOrder >= 0,
+        parentId: category.parentId,
+        cloudinaryId: category.cloudinaryId,
+        cloudinaryUrl: category.cloudinaryUrl,
+        imageWidth: category.imageWidth,
+        imageHeight: category.imageHeight,
+        imageFormat: category.imageFormat,
+        imageFileSize: category.imageFileSize,
+        isCloudinary: category.isCloudinary
+      }
+
+      return NextResponse.json({ category: transformedCategory })
+    }
     
     const categories = await prisma.category.findMany({
       where: {

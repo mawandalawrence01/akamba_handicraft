@@ -10,12 +10,29 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit')
     const category = searchParams.get('category')
     
+    // Build where clause
+    const whereClause: any = {
+      isActive: true,
+      ...(featured === 'true' && { isFeatured: true })
+    }
+
+    // Handle category filtering - can be either category ID or slug
+    if (category) {
+      // First check if it's a slug by trying to find a category with that slug
+      const categoryRecord = await prisma.category.findUnique({
+        where: { slug: category }
+      })
+      
+      if (categoryRecord) {
+        whereClause.categoryId = categoryRecord.id
+      } else {
+        // If not found by slug, assume it's an ID
+        whereClause.categoryId = category
+      }
+    }
+    
     const products = await prisma.product.findMany({
-      where: {
-        isActive: true,
-        ...(featured === 'true' && { isFeatured: true }),
-        ...(category && { categoryId: category })
-      },
+      where: whereClause,
       select: {
         id: true,
         name: true,
@@ -35,7 +52,8 @@ export async function GET(request: NextRequest) {
         artisan: {
           select: {
             id: true,
-            name: true
+            name: true,
+            location: true
           }
         },
         images: {
@@ -62,7 +80,13 @@ export async function GET(request: NextRequest) {
             reviews: true,
             likes: true
           }
-        }
+        },
+        reviews: {
+          select: {
+            rating: true
+          }
+        },
+        stockQuantity: true
       },
       orderBy: [
         { isFeatured: 'desc' },
@@ -72,29 +96,39 @@ export async function GET(request: NextRequest) {
     })
 
     // Transform the data to match the frontend expectations
-    const transformedProducts = products.map(product => ({
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      description: product.description,
-      price: Number(product.price),
-      compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
-      stockQuantity: 1, // Default stock quantity
-      isActive: true, // All products from API are active
-      isFeatured: product.isFeatured,
-      inStock: true, // Default to in stock
-      viewCount: 0, // Default view count
-      likeCount: product._count.likes,
-      createdAt: product.createdAt,
-      category: {
-        id: product.category.id,
-        name: product.category.name,
-        slug: product.category.slug
-      },
-      artisan: product.artisan ? {
-        id: product.artisan.id,
-        name: product.artisan.name
-      } : undefined,
+    const transformedProducts = products.map(product => {
+      // Calculate average rating
+      const avgRating = product.reviews.length > 0 
+        ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length
+        : 0
+
+      return {
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        price: Number(product.price),
+        compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
+        stockQuantity: product.stockQuantity || 1,
+        isActive: true, // All products from API are active
+        isFeatured: product.isFeatured,
+        inStock: (product.stockQuantity || 1) > 0,
+        viewCount: 0, // Default view count
+        likeCount: product._count.likes,
+        rating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
+        reviewCount: product._count.reviews,
+        stock: product.stockQuantity || 1,
+        createdAt: product.createdAt,
+        category: {
+          id: product.category.id,
+          name: product.category.name,
+          slug: product.category.slug
+        },
+        artisan: product.artisan ? {
+          id: product.artisan.id,
+          name: product.artisan.name,
+          location: product.artisan.location || 'Unknown'
+        } : undefined,
       images: product.images.length > 0 ? product.images.map(img => ({
         id: img.id,
         url: img.isCloudinary && img.cloudinaryUrl ? img.cloudinaryUrl : img.url,
@@ -120,7 +154,8 @@ export async function GET(request: NextRequest) {
         fileSize: null,
         isCloudinary: false
       }]
-    }))
+      }
+    })
 
     return NextResponse.json({ 
       products: transformedProducts,
