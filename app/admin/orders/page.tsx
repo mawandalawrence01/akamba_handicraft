@@ -99,140 +99,163 @@ const paymentStatusColors = {
   REFUNDED: 'bg-gray-100 text-gray-800'
 }
 
-// Mock data - in real app, fetch from API
-const mockOrders: Order[] = [
-  {
-    id: '1',
-    orderNumber: 'ORD-2024-001',
-    customerName: 'John Doe',
-    customerEmail: 'john@example.com',
-    status: 'PROCESSING',
-    paymentStatus: 'PAID',
-    total: 189.98,
-    itemCount: 2,
-    createdAt: '2024-01-15T10:30:00Z',
-    shippingAddress: {
-      street: '123 Main St',
-      city: 'Nairobi',
-      state: 'Nairobi',
-      country: 'Kenya',
-      postalCode: '00100'
-    },
-    items: [
-      {
-        id: '1',
-        productName: 'Traditional Elephant Carving',
-        quantity: 1,
-        price: 89.99,
-        image: '/placeholder-product.jpg'
-      },
-      {
-        id: '2',
-        productName: 'Handwoven Basket',
-        quantity: 1,
-        price: 99.99,
-        image: '/placeholder-product.jpg'
-      }
-    ]
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-2024-002',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane@example.com',
-    status: 'SHIPPED',
-    paymentStatus: 'PAID',
-    total: 159.99,
-    itemCount: 1,
-    createdAt: '2024-01-14T15:45:00Z',
-    shippingAddress: {
-      street: '456 Oak Ave',
-      city: 'Mombasa',
-      state: 'Coast',
-      country: 'Kenya',
-      postalCode: '80100'
-    },
-    items: [
-      {
-        id: '3',
-        productName: 'Ceremonial Mask',
-        quantity: 1,
-        price: 159.99,
-        image: '/placeholder-product.jpg'
-      }
-    ]
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-2024-003',
-    customerName: 'Mike Johnson',
-    customerEmail: 'mike@example.com',
-    status: 'PENDING',
-    paymentStatus: 'PENDING',
-    total: 299.97,
-    itemCount: 3,
-    createdAt: '2024-01-13T09:15:00Z',
-    shippingAddress: {
-      street: '789 Pine Rd',
-      city: 'Kisumu',
-      state: 'Nyanza',
-      country: 'Kenya',
-      postalCode: '40100'
-    },
-    items: [
-      {
-        id: '4',
-        productName: 'Wood Sculpture Set',
-        quantity: 3,
-        price: 99.99,
-        image: '/placeholder-product.jpg'
-      }
-    ]
+// Interface for API response
+interface ApiOrder {
+  id: string
+  orderNumber: string
+  status: string
+  paymentStatus: string
+  totalAmount: number
+  createdAt: string
+  shippingFirstName: string
+  shippingLastName: string
+  shippingEmail: string
+  shippingAddress: string
+  shippingCity: string
+  shippingState: string
+  shippingCountry: string
+  shippingPostalCode: string
+  user?: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string
   }
-]
+  items: Array<{
+    id: string
+    quantity: number
+    price: number
+    total: number
+    product: {
+      id: string
+      name: string
+      images: Array<{ url: string }>
+    }
+  }>
+  _count: {
+    items: number
+  }
+}
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>(mockOrders)
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>(mockOrders)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [paymentFilter, setPaymentFilter] = useState<string>('all')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [totalPages, setTotalPages] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
 
-  // Filter orders based on search and filters
+  // Fetch orders from API
+  const fetchOrders = async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '50',
+        ...(statusFilter !== 'all' && { status: statusFilter }),
+        ...(searchTerm && { search: searchTerm })
+      })
+
+      const response = await fetch(`/api/admin/orders?${params}`)
+      if (response.ok) {
+        const data = await response.json()
+        const processedOrders = data.orders.map((apiOrder: ApiOrder): Order => ({
+          id: apiOrder.id,
+          orderNumber: apiOrder.orderNumber,
+          customerName: apiOrder.user 
+            ? `${apiOrder.user.firstName} ${apiOrder.user.lastName}`
+            : `${apiOrder.shippingFirstName} ${apiOrder.shippingLastName}`,
+          customerEmail: apiOrder.user?.email || apiOrder.shippingEmail,
+          status: apiOrder.status as any,
+          paymentStatus: apiOrder.paymentStatus as any,
+          total: apiOrder.totalAmount,
+          itemCount: apiOrder._count.items,
+          createdAt: apiOrder.createdAt,
+          shippingAddress: {
+            street: apiOrder.shippingAddress,
+            city: apiOrder.shippingCity,
+            state: apiOrder.shippingState || '',
+            country: apiOrder.shippingCountry,
+            postalCode: apiOrder.shippingPostalCode
+          },
+          items: apiOrder.items.map(item => ({
+            id: item.id,
+            productName: item.product.name,
+            quantity: item.quantity,
+            price: item.price,
+            image: item.product.images[0]?.url || '/placeholder-product.jpg'
+          }))
+        }))
+        
+        setOrders(processedOrders)
+        setFilteredOrders(processedOrders)
+        setTotalPages(data.totalPages)
+        setTotalCount(data.totalCount)
+      } else {
+        toast.error('Failed to fetch orders')
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+      toast.error('Failed to fetch orders')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentPage === 1) {
+        fetchOrders()
+      } else {
+        setCurrentPage(1) // Reset to first page when searching
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  // Fetch orders on component mount and when filters change
+  useEffect(() => {
+    fetchOrders()
+  }, [currentPage, statusFilter])
+
+  // Filter orders based on payment filter (client-side since API doesn't support it)
   useEffect(() => {
     let filtered = orders
-
-    if (searchTerm) {
-      filtered = filtered.filter(order =>
-        order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(order => order.status === statusFilter)
-    }
 
     if (paymentFilter !== 'all') {
       filtered = filtered.filter(order => order.paymentStatus === paymentFilter)
     }
 
     setFilteredOrders(filtered)
-  }, [orders, searchTerm, statusFilter, paymentFilter])
+  }, [orders, paymentFilter])
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setLoading(true)
     try {
-      // In real app, make API call
-      setOrders(prev => prev.map(order =>
-        order.id === orderId ? { ...order, status: newStatus as any } : order
-      ))
-      toast.success('Order status updated successfully')
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (response.ok) {
+        // Refresh orders after successful update
+        await fetchOrders()
+        toast.success('Order status updated successfully')
+      } else {
+        toast.error('Failed to update order status')
+      }
     } catch (error) {
+      console.error('Error updating order status:', error)
       toast.error('Failed to update order status')
     } finally {
       setLoading(false)
@@ -242,6 +265,11 @@ export default function OrdersPage() {
   const exportOrders = () => {
     // In real app, generate and download CSV/Excel file
     toast.success('Orders exported successfully')
+  }
+
+  const refreshOrders = () => {
+    fetchOrders()
+    toast.success('Orders refreshed')
   }
 
   const getStatusIcon = (status: string) => {
@@ -269,7 +297,7 @@ export default function OrdersPage() {
     processing: orders.filter(o => o.status === 'PROCESSING').length,
     shipped: orders.filter(o => o.status === 'SHIPPED').length,
     delivered: orders.filter(o => o.status === 'DELIVERED').length,
-    totalRevenue: orders.reduce((sum, order) => sum + order.total, 0)
+    totalRevenue: orders.reduce((sum, order) => sum + Number(order.total), 0)
   }
 
   return (
@@ -282,8 +310,12 @@ export default function OrdersPage() {
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
-            <Button className="bg-orange-600 hover:bg-orange-700">
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <Button 
+              className="bg-orange-600 hover:bg-orange-700"
+              onClick={refreshOrders}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
@@ -406,21 +438,29 @@ export default function OrdersPage() {
           <CardTitle>Recent Orders</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrders.map((order) => (
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                <p className="mt-2 text-gray-600">Loading orders...</p>
+              </div>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Payment</TableHead>
+                  <TableHead>Items</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">
                     <div>
@@ -497,11 +537,12 @@ export default function OrdersPage() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          )}
 
-          {filteredOrders.length === 0 && (
+          {!loading && filteredOrders.length === 0 && (
             <div className="text-center py-8">
               <Package className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-semibold text-gray-900">No orders found</h3>

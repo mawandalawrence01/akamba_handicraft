@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     const totalRevenue = revenueResult._sum.totalAmount?.toNumber() || 0
 
-    // Get most visited products
+    // Get most visited products with sales data
     const mostVisitedProducts = await prisma.product.findMany({
       take: 10,
       orderBy: [
@@ -64,44 +64,115 @@ export async function GET(request: NextRequest) {
         { likeCount: 'desc' }
       ],
       include: {
-        category: { select: { name: true } }
+        category: { select: { name: true } },
+        images: { 
+          where: { isPrimary: true },
+          take: 1,
+          select: { url: true }
+        },
+        orderItems: {
+          include: {
+            order: true
+          }
+        }
       },
       where: { isActive: true }
     })
 
-    // Get recent admin activities
-    const recentActivity = await prisma.adminActivity.findMany({
+    // Get recent orders
+    const recentOrders = await prisma.order.findMany({
       take: 10,
       orderBy: { createdAt: 'desc' },
       where: {
         createdAt: { gte: startDate }
+      },
+      include: {
+        user: { select: { firstName: true, lastName: true } }
       }
     })
 
-    // Generate mock sales trends data (replace with real data)
-    const salesTrends = generateSalesTrends(startDate, now, range)
+    // Get top countries from orders
+    const topCountriesData = await prisma.order.groupBy({
+      by: ['shippingCountry'],
+      where: {
+        createdAt: { gte: startDate },
+        status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'] }
+      },
+      _sum: { totalAmount: true },
+      _count: { id: true }
+    })
 
-    // Generate user activity heatmap (mock data)
-    const userActivity = generateUserActivityHeatmap()
+    // Get device stats from user sessions
+    const deviceStats = await prisma.userSession.groupBy({
+      by: ['userAgent'],
+      where: {
+        createdAt: { gte: startDate }
+      },
+      _count: { id: true }
+    })
+
+    // Get sales trends from real order data
+    const salesTrends = await getSalesTrends(startDate, now, range)
+
+    // Get user activity from analytics events
+    const userActivity = await getUserActivityHeatmap(startDate)
+
+    // Process top countries data
+    const totalRevenueByCountry = topCountriesData.reduce((sum, country) => sum + (country._sum.totalAmount?.toNumber() || 0), 0)
+    const topCountries = topCountriesData
+      .map(country => ({
+        country: country.shippingCountry,
+        users: country._count.id,
+        revenue: country._sum.totalAmount?.toNumber() || 0,
+        percentage: totalRevenueByCountry > 0 ? ((country._sum.totalAmount?.toNumber() || 0) / totalRevenueByCountry) * 100 : 0
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5)
+
+    // Process device stats
+    const deviceBreakdown = processDeviceStats(deviceStats)
+
+    // Process most visited products with sales data
+    const processedProducts = mostVisitedProducts.map(product => {
+      // Filter order items by date and status
+      const validOrderItems = product.orderItems.filter(item => {
+        const orderDate = new Date(item.order.createdAt)
+        const validStatuses = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED']
+        return orderDate >= startDate && validStatuses.includes(item.order.status)
+      })
+      
+      const sales = validOrderItems.reduce((sum, item) => sum + item.quantity, 0)
+      const revenue = validOrderItems.reduce((sum, item) => sum + (item.total.toNumber()), 0)
+      
+      return {
+        id: product.id,
+        name: product.name,
+        views: product.viewCount,
+        sales,
+        revenue,
+        image: product.images[0]?.url || '/placeholder-product.jpg'
+      }
+    })
+
+    // Process recent orders
+    const processedOrders = recentOrders.map(order => ({
+      id: order.id,
+      orderNumber: order.orderNumber,
+      customerName: order.user ? `${order.user.firstName} ${order.user.lastName}` : `${order.shippingFirstName} ${order.shippingLastName}`,
+      total: order.totalAmount.toNumber(),
+      status: order.status,
+      createdAt: order.createdAt.toISOString()
+    }))
 
     const stats = {
       totalProducts,
       totalUsers,
       totalOrders,
       totalRevenue,
-      mostVisitedProducts: mostVisitedProducts.map(product => ({
-        id: product.id,
-        name: product.name,
-        viewCount: product.viewCount,
-        likeCount: product.likeCount,
-        category: product.category.name
-      })),
-      recentActivity: recentActivity.map(activity => ({
-        id: activity.id,
-        type: activity.type,
-        description: activity.description,
-        timestamp: activity.createdAt.toISOString()
-      })),
+      mostVisitedProducts: processedProducts,
+      recentOrders: processedOrders,
+      topCountries,
+      deviceStats: deviceBreakdown,
       salesTrends,
       userActivity
     }
@@ -117,21 +188,36 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateSalesTrends(startDate: Date, endDate: Date, range: string) {
+async function getSalesTrends(startDate: Date, endDate: Date, range: string) {
   const trends = []
   const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
   
   for (let i = 0; i < Math.min(daysDiff, 30); i++) {
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + i)
+    const nextDate = new Date(date)
+    nextDate.setDate(date.getDate() + 1)
     
-    // Generate realistic mock data
-    const baseRevenue = 1000 + Math.random() * 2000
-    const orders = Math.floor(5 + Math.random() * 20)
+    // Get real order data for this day
+    const dayOrders = await prisma.order.findMany({
+      where: {
+        createdAt: {
+          gte: date,
+          lt: nextDate
+        },
+        status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'] }
+      },
+      select: {
+        totalAmount: true
+      }
+    })
+    
+    const revenue = dayOrders.reduce((sum, order) => sum + order.totalAmount.toNumber(), 0)
+    const orders = dayOrders.length
     
     trends.push({
       date: date.toISOString().split('T')[0],
-      revenue: Math.round(baseRevenue),
+      revenue: Math.round(revenue),
       orders
     })
   }
@@ -139,33 +225,68 @@ function generateSalesTrends(startDate: Date, endDate: Date, range: string) {
   return trends
 }
 
-function generateUserActivityHeatmap() {
+async function getUserActivityHeatmap(startDate: Date) {
   const activity = []
   
   for (let hour = 0; hour < 24; hour++) {
-    // Simulate realistic user activity patterns
-    let users = 10
+    const hourStart = new Date(startDate)
+    hourStart.setHours(hour, 0, 0, 0)
+    const hourEnd = new Date(hourStart)
+    hourEnd.setHours(hour + 1, 0, 0, 0)
     
-    // Higher activity during business hours
-    if (hour >= 9 && hour <= 17) {
-      users += Math.random() * 50
-    }
-    
-    // Evening peak
-    if (hour >= 18 && hour <= 22) {
-      users += Math.random() * 30
-    }
-    
-    // Lower activity at night
-    if (hour >= 23 || hour <= 6) {
-      users = Math.random() * 20
-    }
+    // Get real analytics events for this hour
+    const hourEvents = await prisma.analyticsEvent.count({
+      where: {
+        timestamp: {
+          gte: hourStart,
+          lt: hourEnd
+        }
+      }
+    })
     
     activity.push({
       hour,
-      users: Math.round(users)
+      users: hourEvents
     })
   }
   
   return activity
+}
+
+function processDeviceStats(deviceStats: any[]): Array<{device: string, users: number, percentage: number}> {
+  const deviceBreakdown: Array<{device: string, users: number, percentage: number}> = []
+  const totalSessions = deviceStats.reduce((sum, stat) => sum + stat._count.id, 0)
+  
+  // Process user agents to categorize devices
+  const deviceCategories = {
+    'Desktop': 0,
+    'Mobile': 0,
+    'Tablet': 0
+  }
+  
+  deviceStats.forEach(stat => {
+    const userAgent = stat.userAgent.toLowerCase()
+    const count = stat._count.id
+    
+    if (userAgent.includes('mobile') || userAgent.includes('android') || userAgent.includes('iphone')) {
+      deviceCategories['Mobile'] += count
+    } else if (userAgent.includes('tablet') || userAgent.includes('ipad')) {
+      deviceCategories['Tablet'] += count
+    } else {
+      deviceCategories['Desktop'] += count
+    }
+  })
+  
+  // Convert to array with percentages
+  Object.entries(deviceCategories).forEach(([device, users]) => {
+    if (users > 0) {
+      deviceBreakdown.push({
+        device,
+        users,
+        percentage: totalSessions > 0 ? Math.round((users / totalSessions) * 100) : 0
+      })
+    }
+  })
+  
+  return deviceBreakdown.sort((a, b) => b.users - a.users)
 }
