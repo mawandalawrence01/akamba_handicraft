@@ -50,13 +50,53 @@ export default function CheckoutPage() {
     e.preventDefault()
     setIsProcessing(true)
     
-    // Simulate payment processing
-    setTimeout(() => {
+    try {
+      // Prepare order data
+      const orderData = {
+        customerName: `${formData.firstName} ${formData.lastName}`,
+        customerEmail: formData.email,
+        items: items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          image: item.image
+        })),
+        subtotal: getTotalPrice(),
+        shipping: getTotalPrice() > 100 ? 0 : 15,
+        tax: getTotalPrice() * 0.1,
+        total: getTotalPrice() + (getTotalPrice() > 100 ? 0 : 15) + (getTotalPrice() * 0.1),
+        shippingAddress: {
+          address: formData.address,
+          city: formData.city,
+          zipCode: formData.zipCode,
+          country: formData.country
+        }
+      }
+
+      // Send order to API
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Clear cart and redirect to success page
+        clearCart()
+        window.location.href = '/checkout/success'
+      } else {
+        throw new Error(result.error || 'Order processing failed')
+      }
+    } catch (error) {
+      console.error('Order processing error:', error)
+      alert('There was an error processing your order. Please try again.')
+    } finally {
       setIsProcessing(false)
-      clearCart()
-      // Redirect to success page
-      window.location.href = '/checkout/success'
-    }, 2000)
+    }
   }
 
   if (items.length === 0) {
