@@ -160,11 +160,11 @@ const mockDeviceData: DeviceData[] = [
 ]
 
 const mockLocationData: LocationData[] = [
-  { country: 'Kenya', users: 2250, percentage: 41.5, revenue: 18950.20 },
-  { country: 'United States', users: 1890, percentage: 34.9, revenue: 15680.75 },
-  { country: 'United Kingdom', users: 680, percentage: 12.5, revenue: 6240.50 },
-  { country: 'Germany', users: 380, percentage: 7.0, revenue: 3180.80 },
-  { country: 'Canada', users: 220, percentage: 4.1, revenue: 1628.25 }
+  { country: 'United States', users: 1250, percentage: 35.2, revenue: 18500 },
+  { country: 'United Kingdom', users: 890, percentage: 23.6, revenue: 12400 },
+  { country: 'Canada', users: 650, percentage: 17.5, revenue: 9200 },
+  { country: 'Australia', users: 420, percentage: 12.9, revenue: 6800 },
+  { country: 'Germany', users: 380, percentage: 10.7, revenue: 5600 }
 ]
 
 export default function AnalyticsPage() {
@@ -172,66 +172,70 @@ export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<AnalyticsData>(mockAnalytics)
   const [loading, setLoading] = useState(false)
 
-  // Static dummy chart data for consistent display
-  const revenueChartData = [
-    { date: 'Jan 1', revenue: 1200, orders: 8 },
-    { date: 'Jan 2', revenue: 1500, orders: 12 },
-    { date: 'Jan 3', revenue: 1800, orders: 15 },
-    { date: 'Jan 4', revenue: 1600, orders: 11 },
-    { date: 'Jan 5', revenue: 2200, orders: 18 },
-    { date: 'Jan 6', revenue: 1900, orders: 14 },
-    { date: 'Jan 7', revenue: 2500, orders: 20 },
-    { date: 'Jan 8', revenue: 2100, orders: 16 },
-    { date: 'Jan 9', revenue: 2800, orders: 22 },
-    { date: 'Jan 10', revenue: 2400, orders: 19 },
-    { date: 'Jan 11', revenue: 3000, orders: 25 },
-    { date: 'Jan 12', revenue: 2700, orders: 21 },
-    { date: 'Jan 13', revenue: 3200, orders: 28 },
-    { date: 'Jan 14', revenue: 2900, orders: 24 },
-    { date: 'Jan 15', revenue: 3500, orders: 30 },
-    { date: 'Jan 16', revenue: 3100, orders: 26 },
-    { date: 'Jan 17', revenue: 3800, orders: 32 },
-    { date: 'Jan 18', revenue: 3400, orders: 29 },
-    { date: 'Jan 19', revenue: 4000, orders: 35 },
-    { date: 'Jan 20', revenue: 3600, orders: 31 },
-    { date: 'Jan 21', revenue: 4200, orders: 38 },
-    { date: 'Jan 22', revenue: 3800, orders: 33 },
-    { date: 'Jan 23', revenue: 4500, orders: 40 },
-    { date: 'Jan 24', revenue: 4100, orders: 36 },
-    { date: 'Jan 25', revenue: 4800, orders: 42 },
-    { date: 'Jan 26', revenue: 4400, orders: 38 },
-    { date: 'Jan 27', revenue: 5000, orders: 45 },
-    { date: 'Jan 28', revenue: 4600, orders: 41 },
-    { date: 'Jan 29', revenue: 5200, orders: 48 },
-    { date: 'Jan 30', revenue: 4800, orders: 44 }
-  ]
+  // Generate dynamic dummy chart data based on date range
+  const generateRevenueChartData = (range: string) => {
+    const data = []
+    const days = range === '7d' ? 7 : range === '30d' ? 30 : range === '90d' ? 90 : 7
+    
+    // Start from today and go back
+    const today = new Date()
+    
+    for (let i = 0; i < days; i++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() - (days - 1 - i))
+      
+      // Generate realistic revenue and orders data with some variation
+      const baseRevenue = 1200 + (i * 50) + Math.sin(i * 0.3) * 200
+      const baseOrders = 8 + Math.floor(i * 0.8) + Math.floor(Math.sin(i * 0.2) * 5)
+      
+      data.push({
+        date: date.toISOString().split('T')[0],
+        revenue: Math.round(baseRevenue),
+        orders: Math.max(1, baseOrders)
+      })
+    }
+    
+    return data
+  }
 
-  const visitorChartData = [
-    { hour: '0:00', visitors: 45 },
-    { hour: '1:00', visitors: 32 },
-    { hour: '2:00', visitors: 28 },
-    { hour: '3:00', visitors: 25 },
-    { hour: '4:00', visitors: 30 },
-    { hour: '5:00', visitors: 38 },
-    { hour: '6:00', visitors: 55 },
-    { hour: '7:00', visitors: 78 },
-    { hour: '8:00', visitors: 95 },
-    { hour: '9:00', visitors: 120 },
-    { hour: '10:00', visitors: 145 },
-    { hour: '11:00', visitors: 160 },
-    { hour: '12:00', visitors: 175 },
-    { hour: '13:00', visitors: 180 },
-    { hour: '14:00', visitors: 165 },
-    { hour: '15:00', visitors: 150 },
-    { hour: '16:00', visitors: 140 },
-    { hour: '17:00', visitors: 125 },
-    { hour: '18:00', visitors: 110 },
-    { hour: '19:00', visitors: 95 },
-    { hour: '20:00', visitors: 80 },
-    { hour: '21:00', visitors: 65 },
-    { hour: '22:00', visitors: 50 },
-    { hour: '23:00', visitors: 40 }
-  ]
+  const revenueChartData = generateRevenueChartData(dateRange)
+
+  // Generate realistic hourly visitor patterns
+  const generateVisitorChartData = () => {
+    const data = []
+    
+    for (let hour = 0; hour < 24; hour++) {
+      let visitors = 0
+      
+      // Peak hours (9-17) have more visitors
+      if (hour >= 9 && hour <= 17) {
+        visitors = 120 + Math.sin((hour - 9) * Math.PI / 8) * 60 + Math.random() * 40
+      } else if (hour >= 18 && hour <= 22) {
+        // Evening hours
+        visitors = 80 + Math.random() * 30
+      } else if (hour >= 7 && hour <= 8) {
+        // Morning hours
+        visitors = 60 + Math.random() * 20
+      } else {
+        // Night hours
+        visitors = 20 + Math.random() * 20
+      }
+      
+      // Format hour for display
+      const hourLabel = hour === 0 ? '12 AM' : 
+                       hour === 12 ? '12 PM' : 
+                       hour < 12 ? `${hour} AM` : `${hour - 12} PM`
+      
+      data.push({
+        hour: hourLabel,
+        visitors: Math.round(visitors)
+      })
+    }
+    
+    return data
+  }
+
+  const visitorChartData = generateVisitorChartData()
 
   // Mock conversion funnel data
   const conversionFunnelData = [
@@ -404,7 +408,7 @@ export default function AnalyticsPage() {
               type="bar"
               xAxisKey="hour"
               bars={[
-                { key: 'visitors', name: 'Visitors', color: '#10b981' }
+                { key: 'visitors', name: 'Visitors', color: '#f97316' }
               ]}
             />
           </CardContent>

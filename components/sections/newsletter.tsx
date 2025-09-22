@@ -23,13 +23,24 @@ export function Newsletter() {
     setIsSubscribing(true)
     
     try {
-      // Here you would integrate with your newsletter service (Mailchimp, ConvertKit, etc.)
-      // For now, we'll simulate a successful subscription
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      toast.success('Welcome to our newsletter! Check your email for a special discount.')
-      setEmail('')
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success('Welcome to our newsletter! Check your email for your 15% discount code.')
+        setEmail('')
+      } else {
+        toast.error(data.error || 'Something went wrong. Please try again.')
+      }
     } catch (error) {
+      console.error('Newsletter subscription error:', error)
       toast.error('Something went wrong. Please try again.')
     } finally {
       setIsSubscribing(false)

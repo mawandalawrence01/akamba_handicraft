@@ -128,23 +128,14 @@ export async function GET(request: NextRequest) {
       _count: { id: true }
     })
 
-    // Get sales trends from real order data
-    const salesTrends = await getSalesTrends(startDate, endDate, range)
+    // Get sales trends - use dummy data for consistent demo display
+    const salesTrends = getDummySalesTrends(range)
 
-    // Get user activity from analytics events
-    const userActivity = await getUserActivityHeatmap(startDate)
+    // Get user activity - use dummy data for consistent demo display
+    const userActivity = getDummyUserActivity()
 
-    // Process top countries data
-    const totalRevenueByCountry = topCountriesData.reduce((sum, country) => sum + (country._sum.totalAmount?.toNumber() || 0), 0)
-    const topCountries = topCountriesData
-      .map(country => ({
-        country: country.shippingCountry,
-        users: country._count.id,
-        revenue: country._sum.totalAmount?.toNumber() || 0,
-        percentage: totalRevenueByCountry > 0 ? ((country._sum.totalAmount?.toNumber() || 0) / totalRevenueByCountry) * 100 : 0
-      }))
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5)
+    // Use dummy top countries data for consistent demo display
+    const topCountries = getDummyTopCountries()
 
     // Process device stats
     const deviceBreakdown = processDeviceStats(deviceStats)
@@ -227,74 +218,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function getSalesTrends(startDate: Date, endDate: Date, range: string) {
-  const trends = []
-  const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
-  
-  for (let i = 0; i < Math.min(daysDiff, 30); i++) {
-    const date = new Date(startDate)
-    date.setDate(startDate.getDate() + i)
-    const nextDate = new Date(date)
-    nextDate.setDate(date.getDate() + 1)
-    
-    // Get real order data for this day
-    const dayOrders = await prisma.order.findMany({
-      where: {
-        createdAt: {
-          gte: date,
-          lt: nextDate
-        },
-        status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'] }
-      },
-      select: {
-        totalAmount: true
-      }
-    })
-    
-    const revenue = dayOrders.reduce((sum, order) => sum + order.totalAmount.toNumber(), 0)
-    const orders = dayOrders.length
-    
-    trends.push({
-      date: date.toISOString().split('T')[0],
-      revenue: Math.round(revenue),
-      orders
-    })
-  }
-  
-  return trends
-}
-
-async function getUserActivityHeatmap(startDate: Date) {
-  const activity = []
-  
-  // Use recent dates for analytics events to show current activity
-  const now = new Date()
-  const analyticsStartDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
-  
-  for (let hour = 0; hour < 24; hour++) {
-    const hourStart = new Date(analyticsStartDate)
-    hourStart.setHours(hour, 0, 0, 0)
-    const hourEnd = new Date(hourStart)
-    hourEnd.setHours(hour + 1, 0, 0, 0)
-    
-    // Get real analytics events for this hour across the last 7 days
-    const hourEvents = await prisma.analyticsEvent.count({
-      where: {
-        timestamp: {
-          gte: hourStart,
-          lt: hourEnd
-        }
-      }
-    })
-    
-    activity.push({
-      hour,
-      users: hourEvents
-    })
-  }
-  
-  return activity
-}
 
 function processDeviceStats(deviceStats: any[]): Array<{device: string, users: number, percentage: number}> {
   const deviceBreakdown: Array<{device: string, users: number, percentage: number}> = []
@@ -332,4 +255,100 @@ function processDeviceStats(deviceStats: any[]): Array<{device: string, users: n
   })
   
   return deviceBreakdown.sort((a, b) => b.users - a.users)
+}
+
+// Dummy data functions for consistent demo display
+function getDummySalesTrends(range: string) {
+  const trends = []
+  const days = range === '7d' ? 7 : range === '30d' ? 30 : range === '90d' ? 90 : 7
+  
+  // Start from today and go back
+  const today = new Date()
+  
+  for (let i = 0; i < days; i++) {
+    const date = new Date(today)
+    date.setDate(today.getDate() - (days - 1 - i))
+    
+    // Generate realistic revenue and orders data with some variation
+    const baseRevenue = 1200 + (i * 50) + Math.sin(i * 0.3) * 200
+    const baseOrders = 8 + Math.floor(i * 0.8) + Math.floor(Math.sin(i * 0.2) * 5)
+    
+    trends.push({
+      date: date.toISOString().split('T')[0],
+      revenue: Math.round(baseRevenue),
+      orders: Math.max(1, baseOrders)
+    })
+  }
+  
+  return trends
+}
+
+function getDummyUserActivity() {
+  const activity = []
+  
+  // Generate realistic hourly visitor patterns
+  for (let hour = 0; hour < 24; hour++) {
+    let visitors = 0
+    
+    // Peak hours (9-17) have more visitors
+    if (hour >= 9 && hour <= 17) {
+      visitors = 120 + Math.sin((hour - 9) * Math.PI / 8) * 60 + Math.random() * 40
+    } else if (hour >= 18 && hour <= 22) {
+      // Evening hours
+      visitors = 80 + Math.random() * 30
+    } else if (hour >= 7 && hour <= 8) {
+      // Morning hours
+      visitors = 60 + Math.random() * 20
+    } else {
+      // Night hours
+      visitors = 20 + Math.random() * 20
+    }
+    
+    // Format hour for display
+    const hourLabel = hour === 0 ? '12 AM' : 
+                     hour === 12 ? '12 PM' : 
+                     hour < 12 ? `${hour} AM` : `${hour - 12} PM`
+    
+    activity.push({
+      hour: hourLabel,
+      users: Math.round(visitors)
+    })
+  }
+  
+  return activity
+}
+
+function getDummyTopCountries() {
+  return [
+    {
+      country: 'United States',
+      users: 1250,
+      revenue: 18500,
+      percentage: 35.2
+    },
+    {
+      country: 'United Kingdom',
+      users: 890,
+      revenue: 12400,
+      percentage: 23.6
+    },
+    {
+      country: 'Canada',
+      users: 650,
+      revenue: 9200,
+      percentage: 17.5
+    },
+    {
+      country: 'Australia',
+      users: 420,
+      revenue: 6800,
+      percentage: 12.9
+    },
+    {
+      country: 'Germany',
+      users: 380,
+      revenue: 5600,
+      percentage: 10.7
+    }
+  ]
 }

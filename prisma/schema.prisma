@@ -698,6 +698,21 @@ model MediaFile {
   @@map("media_files")
 }
 
+// Newsletter subscription model
+model NewsletterSubscription {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  firstName     String?
+  lastName      String?
+  isActive      Boolean   @default(true)
+  subscribedAt  DateTime  @default(now())
+  unsubscribedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("newsletter_subscriptions")
+}
+
 // NextAuth.js required models
 model Account {
   id                String  @id @default(cuid())

@@ -274,7 +274,7 @@ export default function AdminDashboard() {
                   type="bar"
                   xAxisKey="hour"
                   bars={[
-                    { key: 'users', name: 'Visitors', color: '#10b981' }
+                    { key: 'users', name: 'Visitors', color: '#f97316' }
                   ]}
                 />
               ) : (

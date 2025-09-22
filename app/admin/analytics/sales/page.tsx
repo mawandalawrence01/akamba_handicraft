@@ -64,16 +64,32 @@ export default function SalesAnalyticsPage() {
   const [dateRange, setDateRange] = useState('7d')
 
   useEffect(() => {
-    // Mock sales data
-    const mockSalesData: SalesData[] = [
-      { date: '2024-01-01', revenue: 45000, orders: 12, averageOrderValue: 3750 },
-      { date: '2024-01-02', revenue: 52000, orders: 15, averageOrderValue: 3467 },
-      { date: '2024-01-03', revenue: 38000, orders: 10, averageOrderValue: 3800 },
-      { date: '2024-01-04', revenue: 61000, orders: 18, averageOrderValue: 3389 },
-      { date: '2024-01-05', revenue: 48000, orders: 14, averageOrderValue: 3429 },
-      { date: '2024-01-06', revenue: 55000, orders: 16, averageOrderValue: 3438 },
-      { date: '2024-01-07', revenue: 67000, orders: 20, averageOrderValue: 3350 },
-    ]
+    // Generate dynamic sales data based on date range
+    const generateSalesData = (range: string): SalesData[] => {
+      const data = []
+      const days = range === '7d' ? 7 : range === '30d' ? 30 : range === '90d' ? 90 : 7
+      
+      for (let i = 0; i < days; i++) {
+        const date = new Date()
+        date.setDate(date.getDate() - (days - 1 - i))
+        
+        // Generate realistic sales data with some variation
+        const baseRevenue = 1200 + (i * 50) + Math.sin(i * 0.3) * 200
+        const baseOrders = 8 + Math.floor(i * 0.8) + Math.floor(Math.sin(i * 0.2) * 5)
+        const averageOrderValue = baseRevenue / baseOrders
+        
+        data.push({
+          date: date.toISOString().split('T')[0],
+          revenue: Math.round(baseRevenue),
+          orders: Math.max(1, baseOrders),
+          averageOrderValue: Math.round(averageOrderValue)
+        })
+      }
+      
+      return data
+    }
+
+    const mockSalesData = generateSalesData(dateRange)
 
     const mockProductSales: ProductSales[] = [
       {
